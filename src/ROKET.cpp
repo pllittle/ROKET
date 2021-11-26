@@ -4,7 +4,6 @@
 #include <omp.h>
 #include <smartr.h> // import smartr::Rcpp_logSumExp
 
-// [[Rcpp::interfaces(r,cpp)]]
 
 // --------------------
 // Optimal Transport Functions
