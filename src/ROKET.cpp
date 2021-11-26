@@ -19,6 +19,9 @@ double Rcpp_logSumExp(const arma::vec& log_x){
 }
 */
 
+// using namespace Rcpp; // experimenting
+using namespace smartr; // experimenting
+
 // --------------------
 // Optimal Transport Functions
 // --------------------
@@ -42,8 +45,8 @@ arma::mat run_OT_OPT(const arma::vec& XX,const arma::vec& YY,
 		
 		// Update log_tt = log( KK * vv )
 		for(kk = 0; kk < n1; kk++){
-			// log_tt.at(kk) = Rcpp_logSumExp(log_KK.row(kk).t() + log_vv);
-			log_tt.at(kk) = smartr::Rcpp_logSumExp(log_KK.row(kk).t() + log_vv);
+			log_tt.at(kk) = Rcpp_logSumExp(log_KK.row(kk).t() + log_vv);
+			// log_tt.at(kk) = smartr::Rcpp_logSumExp(log_KK.row(kk).t() + log_vv);
 		}
 		
 		// Update log_uu = cnst_u * ( log(XX) - log(tt) )
@@ -53,8 +56,8 @@ arma::mat run_OT_OPT(const arma::vec& XX,const arma::vec& YY,
 		
 		// Update log_ss = log( KK.t() * uu )
 		for(ll = 0; ll < n2; ll++){
-			// log_ss.at(ll) = Rcpp_logSumExp(log_KK.col(ll) + log_uu);
-			log_ss.at(ll) = smartr::Rcpp_logSumExp(log_KK.col(ll) + log_uu);
+			log_ss.at(ll) = Rcpp_logSumExp(log_KK.col(ll) + log_uu);
+			// log_ss.at(ll) = smartr::Rcpp_logSumExp(log_KK.col(ll) + log_uu);
 		}
 		
 		// Update log_vv = cnst_v * ( log(YY) - log(ss) )
@@ -182,11 +185,10 @@ Rcpp::List Rcpp_run_full_OT(const arma::mat& COST,
 	bool show2 = show && ncores == 1;
 	
 	#ifdef _OPENMP
-	# pragma omp parallel for collapse(2) schedule(static) \
+	# pragma omp parallel for collapse(2) schedule(dynamic) \
 		num_threads(ncores) \
 		shared(NN,COST,ZZ,EPS,LAMBDA1,LAMBDA2,\
-			balance,highLAM_lowMU,\
-			conv,max_iter,show2,\
+			balance,highLAM_lowMU,conv,max_iter,show2,\
 			show_iter,DIST,sum_OT)
 	#endif
 	for(arma::uword ii = 0; ii < NN; ii++){
@@ -207,12 +209,12 @@ Rcpp::List Rcpp_run_full_OT(const arma::mat& COST,
 		
 		// Get XX, YY, COST_XY
 		arma::vec XX = ZZ.col(ii), YY = ZZ.col(jj);
-		arma::mat COST_XY = COST.submat(arma::find(XX == 1.0),
-			arma::find(YY == 1.0));
+		arma::mat COST_XY = COST.submat(arma::find(XX > 0.0),
+			arma::find(YY > 0.0));
 		
 		// Run OT
-		arma::mat OT = Rcpp_run_OT(XX.elem(arma::find(XX == 1.0)),
-			YY.elem(arma::find(YY == 1.0)),COST_XY,EPS,LAMBDA1,LAMBDA2,
+		arma::mat OT = Rcpp_run_OT(XX.elem(arma::find(XX > 0.0)),
+			YY.elem(arma::find(YY > 0.0)),COST_XY,EPS,LAMBDA1,LAMBDA2,
 			balance,highLAM_lowMU,conv,max_iter,false,show_iter);
 		
 		// Calculate DIST and sum_OT
