@@ -188,12 +188,12 @@ Rcpp::List Rcpp_run_full_OT(const arma::mat& COST,
 		
 		// Get XX, YY, COST_XY
 		arma::vec XX = ZZ.col(ii), YY = ZZ.col(jj);
-		arma::mat COST_XY = COST.submat(arma::find(XX > 0.0),
-			arma::find(YY > 0.0));
+		arma::mat COST_XY = COST.submat(arma::find(XX == 1.0),
+			arma::find(YY == 1.0));
 		
 		// Run OT
-		arma::mat OT = Rcpp_run_OT(XX.elem(arma::find(XX > 0.0)),
-			YY.elem(arma::find(YY > 0.0)),COST_XY,EPS,LAMBDA1,LAMBDA2,
+		arma::mat OT = Rcpp_run_OT(XX.elem(arma::find(XX == 1.0)),
+			YY.elem(arma::find(YY == 1.0)),COST_XY,EPS,LAMBDA1,LAMBDA2,
 			balance,highLAM_lowMU,conv,max_iter,false,show_iter);
 		
 		// Calculate DIST and sum_OT

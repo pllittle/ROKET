@@ -628,6 +628,7 @@ kOT_sim_make = function(work_dir,NN = 200,
 kOT_sim_OT = function(work_dir,NN,nGENE,nPATH,SCEN,ncores = 1){
 	
 	my_dirs = setdirs(work_dir = work_dir)
+	# my_dirs = ROKET:::setdirs(work_dir = work_dir)
 	
 	# Import geneInfo
 	inputs_fn = file.path(my_dirs$sim_dir,
