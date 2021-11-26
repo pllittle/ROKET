@@ -263,7 +263,7 @@ kOT_sim_baseCov = function(subj_names){
 kOT_sim_sPATH = function(subj_names,path_names,SCEN){
 	
 	verbose = TRUE
-	if( verbose ) cat(sprintf("%s: Simulate subject pathways mutated ...\n",date()))
+	if( verbose ) cat(sprintf("%s: Simulate individual pathways mutated ...\n",date()))
 	NN 				= length(subj_names)
 	nPATH 		= length(path_names)
 	vec_path 	= seq(nPATH)
@@ -294,7 +294,7 @@ kOT_sim_sPATH = function(subj_names,path_names,SCEN){
 kOT_sim_sMUT = function(sPATH,geneInfo,SCEN){
 	
 	verbose = TRUE
-	if( verbose ) cat(sprintf("%s: Simulate subject genes mutated ...\n",date()))
+	if( verbose ) cat(sprintf("%s: Simulate individual genes mutated ...\n",date()))
 	NN = nrow(sPATH)
 	gene_names = rownames(geneInfo$gene_sim)
 	nGENE = length(gene_names)
@@ -317,7 +317,7 @@ kOT_sim_sMUT = function(sPATH,geneInfo,SCEN){
 		prob_paths = prob_paths / sum(prob_paths)
 		tmp_df$PROB = prob_paths
 		
-		# Sample from subject's mutated and null paths
+		# Sample from individual's mutated and null paths
 		if( SCEN %in% c(1,3) ){
 			# TMB is about 2 or 3 times PMB
 			subj_TMB = round(length(subj_paths) * 3)
