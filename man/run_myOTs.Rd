@@ -40,7 +40,8 @@ the tuning parameter penalizing the distance between \code{YY}
 and the column sums of the optimal transport matrix.}
 
 \item{balance}{Boolean set to \code{TRUE} to run balanced
-optimal transport. Otherwise run unbalanced optimal transport.}
+optimal transport regardless of LAMDA1 and LAMBDA2. 
+Otherwise run unbalanced optimal transport.}
 
 \item{conv}{A positive numeric value to determine 
 algorithmic convergence. The default value is \code{1e-5}.}
@@ -49,7 +50,7 @@ algorithmic convergence. The default value is \code{1e-5}.}
 iterations to run the algorithm.}
 
 \item{ncores}{A positive integer for the number of cores/threads
-to reduce computational runtime when running a for loop}
+to reduce computational runtime when running for loops}
 
 \item{show}{Boolean value to display verbose algorithm output.}
 

@@ -46,7 +46,8 @@ setdirs = function(work_dir){
 #'	the tuning parameter penalizing the distance between \code{YY}
 #'	and the column sums of the optimal transport matrix.
 #' @param balance Boolean set to \code{TRUE} to run balanced
-#'	optimal transport. Otherwise run unbalanced optimal transport.
+#'	optimal transport regardless of LAMDA1 and LAMBDA2. 
+#'	Otherwise run unbalanced optimal transport.
 #' @param conv A positive numeric value to determine 
 #'	algorithmic convergence. The default value is \code{1e-5}.
 #' @param max_iter A positive integer denoting the maximum
@@ -124,13 +125,14 @@ run_myOT = function(XX,YY,COST,EPS,LAMBDA1,LAMBDA2,
 #'	the tuning parameter penalizing the distance between \code{YY}
 #'	and the column sums of the optimal transport matrix.
 #' @param balance Boolean set to \code{TRUE} to run balanced
-#'	optimal transport. Otherwise run unbalanced optimal transport.
+#'	optimal transport regardless of LAMDA1 and LAMBDA2. 
+#'	Otherwise run unbalanced optimal transport.
 #' @param conv A positive numeric value to determine 
 #'	algorithmic convergence. The default value is \code{1e-5}.
 #' @param max_iter A positive integer denoting the maximum
 #'	iterations to run the algorithm.
 #' @param ncores A positive integer for the number of cores/threads
-#'	to reduce computational runtime when running a for loop
+#'	to reduce computational runtime when running for loops
 #' @param show Boolean value to display verbose algorithm output.
 #' @param show_iter A positive integer to display iteration details
 #'	at multiples of \code{show_iter} but only if \code{show = TRUE}.
@@ -161,12 +163,23 @@ run_myOTs = function(ZZ,COST,EPS,LAMBDA1,LAMBDA2,
 		stop("Some features in ZZ not among features in COST")
 	COST = COST[nZZ,nZZ,drop = FALSE]
 	
+	if( !all(colnames(COST) == rownames(ZZ)) )
+		stop("rownames mismatch")
+	
 	# Run OT across all individuals
 	out_OT = Rcpp_run_full_OT(COST = COST,ZZ = ZZ,
 		EPS = EPS,LAMBDA1 = LAMBDA1,LAMBDA2 = LAMBDA2,
 		balance = balance,highLAM_lowMU = TRUE,
 		conv = conv,max_iter = max_iter,ncores = ncores,
 		show = show,show_iter = show_iter)
+	
+	out_OT$DIST = smart_names(out_OT$DIST,
+		ROW = colnames(ZZ),COL = colnames(ZZ))
+	out_OT$sum_OT = smart_names(out_OT$sum_OT,
+		ROW = colnames(ZZ),COL = colnames(ZZ))
+	out_OT$DIST_2 = out_OT$DIST / out_OT$sum_OT
+	
+	return(out_OT)
 	
 }
 
@@ -628,7 +641,6 @@ kOT_sim_make = function(work_dir,NN = 200,
 kOT_sim_OT = function(work_dir,NN,nGENE,nPATH,SCEN,ncores = 1){
 	
 	my_dirs = setdirs(work_dir = work_dir)
-	# my_dirs = ROKET:::setdirs(work_dir = work_dir)
 	
 	# Import geneInfo
 	inputs_fn = file.path(my_dirs$sim_dir,
@@ -643,8 +655,7 @@ kOT_sim_OT = function(work_dir,NN,nGENE,nPATH,SCEN,ncores = 1){
 	
 	# OT params
 	EPS 				= 1e-3
-	LAMs 				= c(0.5,1,5)
-	BALs 				= c(TRUE,FALSE)
+	LAMs 				= c(0.5,1,5,Inf)
 	conv 				= 1e-5
 	max_iter 		= 3e3
 	show_iter		= 10
@@ -656,15 +667,10 @@ kOT_sim_OT = function(work_dir,NN,nGENE,nPATH,SCEN,ncores = 1){
 	if( !file.exists(OT_fn) ){
 		OT = list()
 		for(LAM in LAMs){
-		for(BAL in BALs){
-			# LAM = LAMs[1]; BAL = BALs[1]
+			# LAM = LAMs[1]
 			
-			if( BAL == TRUE ){
-				if( LAM != LAMs[1] ) next # aka we only need to run BAL = true once
-			}
-			cat(sprintf("%s: BAL = %s, LAM = %s ...\n",date(),BAL,LAM))
-			
-			tmp_name = sprintf("BAL.%s_LAM.%s",BAL,LAM)
+			cat(sprintf("%s: LAM = %s ...\n",date(),LAM))
+			tmp_name = sprintf("LAM.%s",LAM)
 			tmp_OT_fn = file.path(my_dirs$reps_dir,
 				sprintf("tmp_OT_SCEN%s_%s.rds",SCEN,tmp_name))
 			
@@ -677,18 +683,17 @@ kOT_sim_OT = function(work_dir,NN,nGENE,nPATH,SCEN,ncores = 1){
 				sMUT = sMUT[int_genes,]
 				dim(COST); dim(sMUT)
 				
-				if( !all(colnames(COST) == rownames(sMUT)) ) stop("rownames mismatch")
-				out = Rcpp_run_full_OT(COST = COST,ZZ = sMUT,EPS = EPS,
-					LAMBDA1 = LAM,LAMBDA2 = LAM,balance = BAL,
-					highLAM_lowMU = TRUE,conv = conv,max_iter = max_iter,
-					ncores = ncores,show = FALSE,show_iter = show_iter)
+				LAM2 	= LAM
+				BAL 	= FALSE
+				if( is.infinite(LAM) ){
+					LAM2 = 1
+					BAL = TRUE
+				}
+				out = run_myOTs(ZZ = sMUT,COST = COST,EPS = EPS,
+					LAMBDA1 = LAM2,LAMBDA2 = LAM2,balance = BAL,
+					conv = conv,max_iter = max_iter,ncores = ncores,
+					show = FALSE,show_iter = show_iter)
 				
-				NN = ncol(sMUT)
-				out$DIST = smart_names(out$DIST,
-					ROW = paste0("S",seq(NN)),
-					COL = paste0("S",seq(NN)))
-				out$DIST_2 = out$DIST / out$sum_OT
-				names(out)
 				saveRDS(out,tmp_OT_fn)
 				
 			} else {
@@ -698,7 +703,7 @@ kOT_sim_OT = function(work_dir,NN,nGENE,nPATH,SCEN,ncores = 1){
 			
 			OT[[tmp_name]] = out
 			
-		}}
+		}
 		saveRDS(OT,OT_fn)
 	}
 	

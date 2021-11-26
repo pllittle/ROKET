@@ -42,7 +42,8 @@ the tuning parameter penalizing the distance between \code{YY}
 and the column sums of the optimal transport matrix.}
 
 \item{balance}{Boolean set to \code{TRUE} to run balanced
-optimal transport. Otherwise run unbalanced optimal transport.}
+optimal transport regardless of LAMDA1 and LAMBDA2. 
+Otherwise run unbalanced optimal transport.}
 
 \item{conv}{A positive numeric value to determine 
 algorithmic convergence. The default value is \code{1e-5}.}
