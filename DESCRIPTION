@@ -1,0 +1,16 @@
+Package: ROKET
+Type: Package
+Title: Associating Somatic Mutation with Clinical 
+				Outcomes through Kernel Regression and Optimal Transport
+Version: 1.0.0
+Date: 2021-11-24
+Author: Paul Little
+Maintainer: Paul Little <plittle@fredhutch.org>
+Description: Perform optimal transport on somatic point mutations 
+				and kernel regression hypothesis testing.
+Encoding: UTF-8
+Imports: data.table, Rcpp, smartr, ggplot2, survival,
+				MiRKAT
+LinkingTo: Rcpp, RcppArmadillo, smartr
+RoxygenNote: 7.1.2
+License: GPL (>= 3)
