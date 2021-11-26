@@ -5,9 +5,9 @@
 #include <omp.h>
 #endif
 
-// #include <smartr.h>
+#include <smartr.h>
 
-
+/*
 double Rcpp_logSumExp(const arma::vec& log_x){
 	if( log_x.n_elem == 1 ){
 		return log_x.at(0);
@@ -17,6 +17,7 @@ double Rcpp_logSumExp(const arma::vec& log_x){
 		return std::log(arma::sum(arma::exp(log_x_2))) + max_val;
 	}
 }
+*/
 
 // --------------------
 // Optimal Transport Functions
@@ -41,8 +42,8 @@ arma::mat run_OT_OPT(const arma::vec& XX,const arma::vec& YY,
 		
 		// Update log_tt = log( KK * vv )
 		for(kk = 0; kk < n1; kk++){
-			log_tt.at(kk) = Rcpp_logSumExp(log_KK.row(kk).t() + log_vv);
-			// log_tt.at(kk) = smartr::Rcpp_logSumExp(log_KK.row(kk).t() + log_vv);
+			// log_tt.at(kk) = Rcpp_logSumExp(log_KK.row(kk).t() + log_vv);
+			log_tt.at(kk) = smartr::Rcpp_logSumExp(log_KK.row(kk).t() + log_vv);
 		}
 		
 		// Update log_uu = cnst_u * ( log(XX) - log(tt) )
@@ -52,8 +53,8 @@ arma::mat run_OT_OPT(const arma::vec& XX,const arma::vec& YY,
 		
 		// Update log_ss = log( KK.t() * uu )
 		for(ll = 0; ll < n2; ll++){
-			log_ss.at(ll) = Rcpp_logSumExp(log_KK.col(ll) + log_uu);
-			// log_ss.at(ll) = smartr::Rcpp_logSumExp(log_KK.col(ll) + log_uu);
+			// log_ss.at(ll) = Rcpp_logSumExp(log_KK.col(ll) + log_uu);
+			log_ss.at(ll) = smartr::Rcpp_logSumExp(log_KK.col(ll) + log_uu);
 		}
 		
 		// Update log_vv = cnst_v * ( log(YY) - log(ss) )
