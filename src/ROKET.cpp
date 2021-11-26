@@ -1,8 +1,12 @@
+// [[Rcpp::depends(RcppArmadillo)]]
 #include <RcppArmadillo.h>
+
+#ifdef _OPENMP
 #include <omp.h>
+#endif
+
 // #include <smartr.h>
 
-// [[Rcpp::depends(RcppArmadillo)]]
 
 double Rcpp_logSumExp(const arma::vec& log_x){
 	if( log_x.n_elem == 1 ){
@@ -17,8 +21,6 @@ double Rcpp_logSumExp(const arma::vec& log_x){
 // --------------------
 // Optimal Transport Functions
 // --------------------
-
-
 arma::mat run_OT_OPT(const arma::vec& XX,const arma::vec& YY,
 	const arma::mat& COST_XY,const double& EPS,const double& LAMBDA1,
 	const double& LAMBDA2,const double& conv,const arma::uword& max_iter,
@@ -178,10 +180,14 @@ Rcpp::List Rcpp_run_full_OT(const arma::mat& COST,
 		sum_OT = DIST;
 	bool show2 = show && ncores == 1;
 	
-	omp_set_num_threads(ncores);
+	#ifdef _OPENMP
 	# pragma omp parallel for collapse(2) schedule(static) \
-		shared(NN,COST,ZZ,EPS,LAMBDA1,LAMBDA2,balance,highLAM_lowMU,\
-		conv,max_iter,show2,show_iter,DIST,sum_OT)
+		num_threads(ncores) \
+		shared(NN,COST,ZZ,EPS,LAMBDA1,LAMBDA2,\
+			balance,highLAM_lowMU,\
+			conv,max_iter,show2,\
+			show_iter,DIST,sum_OT)
+	#endif
 	for(arma::uword ii = 0; ii < NN; ii++){
 	for(arma::uword jj = 0; jj < NN; jj++){
 		
