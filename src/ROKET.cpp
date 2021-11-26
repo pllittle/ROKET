@@ -1,9 +1,8 @@
-// [[Rcpp::depends(RcppArmadillo)]]
-
 #include <RcppArmadillo.h>
 #include <omp.h>
-#include <smartr.h> // import smartr::Rcpp_logSumExp
+#include <smartr.h>
 
+// [[Rcpp::depends(RcppArmadillo)]]
 
 // --------------------
 // Optimal Transport Functions
@@ -167,7 +166,7 @@ Rcpp::List Rcpp_run_full_OT(const arma::mat& COST,
 	bool show2 = show && ncores == 1;
 	
 	omp_set_num_threads(ncores);
-	# pragma omp parallel for collapse(2) schedule(dynamic) \
+	# pragma omp parallel for collapse(2) schedule(static) \
 		shared(NN,COST,ZZ,EPS,LAMBDA1,LAMBDA2,balance,highLAM_lowMU,\
 		conv,max_iter,show2,show_iter,DIST,sum_OT)
 	for(arma::uword ii = 0; ii < NN; ii++){
