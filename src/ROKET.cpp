@@ -180,7 +180,7 @@ Rcpp::List Rcpp_run_full_OT(const arma::mat& COST,
 				Rcpp::Rcout << (jj + 1) << " out of " << NN << "\n";
 		}
 		
-		if( ii < jj && ( LAMBDA1 == LAMBDA2 || balance ) ){
+		if( ii < jj ){
 			// if LAM1 == LAM2 or balanced OT, we don't need 
 			//		to calculate the upper triangle
 			continue;
@@ -200,7 +200,7 @@ Rcpp::List Rcpp_run_full_OT(const arma::mat& COST,
 		DIST.at(ii,jj) 		= arma::accu(OT % COST_XY);
 		sum_OT.at(ii,jj) 	= arma::accu(OT);
 		
-		if( ii != jj && ( LAMBDA1 == LAMBDA2 || balance ) ){
+		if( ii != jj ){
 			DIST.at(jj,ii) = DIST.at(ii,jj);
 			sum_OT.at(jj,ii) = sum_OT.at(ii,jj);
 		}
