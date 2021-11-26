@@ -1102,7 +1102,7 @@ kOT_sim_AGG = function(work_dir){
 			nom_PVAL$OLS = nom_PVAL$OLS / RR
 			nom_PVAL$SURV = nom_PVAL$SURV / RR
 			fin_nom_PVAL[[sprintf("SCEN%s",SCEN)]] = list(nom_PVAL = nom_PVAL)
-			rm(nom_PVAL,mt_PVAL)
+			rm(nom_PVAL)
 		}
 		saveRDS(list(RES = res,fin_nom_PVAL = fin_nom_PVAL),res_fn)
 		

@@ -13,3 +13,7 @@ Rcpp_KernTest <- function(RESI, KK, nPERMS = 2e3L, iter1 = 50L, iter2 = 1e3L, ve
     .Call('_ROKET_Rcpp_KernTest', PACKAGE = 'ROKET', RESI, KK, nPERMS, iter1, iter2, verbose)
 }
 
+# Register entry points for exported C++ functions
+methods::setLoadAction(function(ns) {
+    .Call('_ROKET_RcppExport_registerCCallable', PACKAGE = 'ROKET')
+})
