@@ -831,7 +831,7 @@ kOT_sim_GENE = function(sim,out = "OLS",hBETAs = NULL,nPERM,samp_thres){
 kOT_sim_KERN = function(sim,OT,nPERM,hBETAs = NULL){
 	
 	OT_EUC = OT
-	OT_EUC$EUC = as.matrix(dist(t(sim$sGEN$sMUT)))
+	OT_EUC$EUC = as.matrix(dist(t(sim$sMUT)))
 	all_out = c("OLS","SURV")
 	all_LABS = c("EUC","OT")
 	
@@ -840,18 +840,13 @@ kOT_sim_KERN = function(sim,OT,nPERM,hBETAs = NULL){
 	}
 	
 	# Set null model covariates
-	log10_TMB = log10(colSums(sim$sGEN$sMUT))
+	log10_TMB = log10(colSums(sim$sMUT))
 	XX = cbind(sim$XX[,-1],log10_TMB)
 	
 	reg_out = c()
 	for(out in all_out){
 	for(hBETA in hBETAs){
 	for(LAB in all_LABS){
-		if(FALSE){
-			out = all_out[2]; hBETA = hBETAs[1]; 
-			LAB = all_LABS[2]
-		}
-		
 		cat(sprintf("%s: OUT = %s; hBETA = %s; LAB = %s ...\n",
 			date(),out,hBETA,LAB))
 		hBETA_2 = as.numeric(gsub("hBETA_","",hBETA))
