@@ -859,8 +859,7 @@ kOT_sim_KERN = function(sim,OT,nPERM,hBETAs = NULL){
 		} else {
 			for(vv in names(OT)){
 				dd = OT[[vv]]$DIST
-				vv2 = paste(strsplit(vv,"_")[[1]][1:2],collapse = "_")
-				KK[[vv2]] = D2K(D = dd)
+				KK[[vv]] = D2K(D = dd)
 			}
 		}
 		rm(dd)
@@ -1080,7 +1079,7 @@ kOT_sim_AGG = function(work_dir){
 				tmp_df = tmp_gene
 				tmp_df$THRES = tmp_df[,VAR]
 				VAR2 = VAR
-				if( VAR == "PVAL_perm" ) 	VAR2 = "minP_gene_perm1"
+				if( VAR == "PVAL_perm" ) 	VAR2 = "minP_gene_perm"
 				tmp_df$DIST = VAR2
 				tmp_df$SOFT = "none"
 				tmp_df = tmp_df[,c("RR","OUT","DIST","hBETA",
@@ -1093,7 +1092,7 @@ kOT_sim_AGG = function(work_dir){
 			tmp_kern$SCEN = SCEN
 			tmp_kern$THRES = tmp_kern$PVAL_perm
 			tmp_kern$DIST = tmp_kern$LAB
-			tmp_kern$nTEST_genes = 500
+			tmp_kern$nTEST_genes = nrow(tmp_rds$nom_PVAL$OLS)
 			tmp_kern = tmp_kern[,c("RR","OUT","DIST","hBETA",
 				"SOFT","SCEN","THRES","nTEST_genes")]
 			tmp_kern[1:5,]
@@ -1107,7 +1106,9 @@ kOT_sim_AGG = function(work_dir){
 			fin_nom_PVAL[[sprintf("SCEN%s",SCEN)]] = list(nom_PVAL = nom_PVAL)
 			rm(nom_PVAL)
 		}
-		saveRDS(list(RES = res,fin_nom_PVAL = fin_nom_PVAL),res_fn)
+		saveRDS(list(RES = res,
+			fin_nom_PVAL = fin_nom_PVAL),
+			res_fn)
 		
 		# Calculate hypothesis rejection
 		rds = readRDS(res_fn)
@@ -1119,7 +1120,7 @@ kOT_sim_AGG = function(work_dir){
 		cat(sprintf("%s: Calculate %s rejections ...\n",date(),tot))
 		for(ii in seq(tot)){
 			# ii = 1
-			smart_progress(ii = ii,nn = tot,iter2 = 1e2)
+			smart_progress(ii = ii,nn = tot,iter2 = 2e2)
 			idx = which(res$OUT == ures$OUT[ii]
 				& res$DIST == ures$DIST[ii]
 				& res$SOFT == ures$SOFT[ii]
@@ -1127,19 +1128,19 @@ kOT_sim_AGG = function(work_dir){
 				& res$hBETA == ures$hBETA[ii])
 			length(idx)
 			
-			# ures$REJECT[ii] = calc_POWER_2(PVAL = res$THRES[idx])
 			ures$REJECT[ii] = mean(res$THRES[idx] < 0.05)
 			
 			rm(idx)
 		}
 		
-		mDIST = c("minP_gene_perm1")
+		mDIST = c("minP_gene_perm")
 		tmp_df = ures[which(ures$DIST %in% mDIST),]
 		tmp_df$SOFT = "Rcpp"
 		ures$SOFT[ures$DIST %in% mDIST] = "MiRKAT"
 		ures = rbind(ures,tmp_df); rm(tmp_df)
 		ures$SOFT[grepl("Rcpp",ures$SOFT)] = "ROKET"
 		saveRDS(ures,ures_fn)
+		
 	}
 	ures = readRDS(ures_fn)
 	
@@ -1147,7 +1148,7 @@ kOT_sim_AGG = function(work_dir){
 		ures[1:3,]
 		smart_table(ures$DIST)
 		tmp_lev = sort(unique(ures$DIST)); tmp_lev
-		tmp_lev = tmp_lev[c(6,7,5,4,3,2,1,8)]; tmp_lev
+		tmp_lev = tmp_lev[c(6,5,4,3,2,1,8)]; tmp_lev
 		# tmp_lev = tmp_lev[c(6,7,8,9,10,11,12,13,5,4,3,2,1,14)]; tmp_lev
 		# tmp_lev = tmp_lev[c(6,7,8,9,10,5,4,3,2,1,11)]; tmp_lev
 		ures$DIST2 = factor(ures$DIST,levels = tmp_lev,
