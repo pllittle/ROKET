@@ -719,8 +719,8 @@ kOT_sim_OT = function(work_dir,NN,nGENE,nPATH,SCEN,ncores = 1){
 kOT_sim_GENE = function(sim,out = "OLS",hBETAs = NULL,nPERM,samp_thres){
 	
 	num_basecov = ncol(sim$XX); num_basecov
-	vec_genes = rownames(sim$sGEN$sMUT)
-	num_genes = nrow(sim$sGEN$sMUT); num_genes
+	vec_genes = rownames(sim$sMUT)
+	num_genes = nrow(sim$sMUT); num_genes
 	
 	if( is.null(hBETAs) ){
 		hBETAs = names(sim$OUT); hBETAs
@@ -735,7 +735,7 @@ kOT_sim_GENE = function(sim,out = "OLS",hBETAs = NULL,nPERM,samp_thres){
 		OUTs
 	}
 	# GMs = c(0,5,10,20,30)
-	log10_TMB = log10(colSums(sim$sGEN$sMUT))
+	log10_TMB = log10(colSums(sim$sMUT))
 	XX = smart_df(cbind(sim$XX[,-1],log10_TMB))
 	NN = nrow(XX)
 	
@@ -769,7 +769,7 @@ kOT_sim_GENE = function(sim,out = "OLS",hBETAs = NULL,nPERM,samp_thres){
 	for(gene in vec_genes){
 		# gene = vec_genes[79]; gene
 		smart_progress(ii = cnt,nn = num_genes,iter = 5,iter2 = 1e2)
-		tab1 = table(sim$sGEN$sMUT[gene,]); tab1
+		tab1 = table(sim$sMUT[gene,]); tab1
 		if( length(tab1) != 2 || min(tab1) < samp_thres ){
 			aPVAL[,gene] = 1
 			cnt = cnt + 1
@@ -780,13 +780,13 @@ kOT_sim_GENE = function(sim,out = "OLS",hBETAs = NULL,nPERM,samp_thres){
 		# PERM = 1
 		if( out == "OLS" ){
 			lm_out = lm(sim$OUT[[hBETA]]$YY ~ 
-				sim$sGEN$sMUT[gene,idx_SUBJ[PERM,]] + .,data = XX)
+				sim$sMUT[gene,idx_SUBJ[PERM,]] + .,data = XX)
 			aPVAL[PERM,gene] = summary(lm_out)$coefficients[2,4]
 		}
 		if( out == "SURV" ){
 			
 			cx_out = tryCatch(coxph(Surv(SS,DD) ~ 
-				sim$sGEN$sMUT[gene,idx_SUBJ[PERM,]] + .,data = XX),
+				sim$sMUT[gene,idx_SUBJ[PERM,]] + .,data = XX),
 				warning = function(ww){NULL},error = function(ee){NULL})
 			
 			if( is.null(cx_out) ){
@@ -1002,6 +1002,8 @@ kOT_sim_REG = function(work_dir,NN,nGENE,nPATH,SCEN,rr){
 	# Import outcomes
 	out_fn = file.path(my_dirs$reps_dir,
 		sprintf("sim_SCEN%s_rr%s.rds",SCEN,rr))
+	if( !file.exists(out_fn) )
+		stop(sprintf("Outcomes from SCEN %s rep %s missing",SCEN,rr))
 	sim$OUT = readRDS(out_fn)
 	
 	# Run gene regressions
@@ -1009,7 +1011,7 @@ kOT_sim_REG = function(work_dir,NN,nGENE,nPATH,SCEN,rr){
 	OUTs = c("OLS","SURV")
 	nom_PVAL = list()
 	for(out in OUTs){
-		# out = OUTs[2]
+		# out = OUTs[1]
 		tmp_out = kOT_sim_GENE(sim = sim,
 			out = out,hBETAs = NULL,nPERM = 1e2,
 			samp_thres = 20)
@@ -1166,7 +1168,7 @@ kOT_sim_AGG = function(work_dir){
 	}
 	# dim(ures); ures[1:3,]
 	
-	my_theme = theme(legend.position = c("none","bottom","right")[2],
+	my_theme = theme(legend.position = c("none","bottom")[2],
 		text = element_text(size = 40),
 		axis.text.x = element_text(size = 25),
 		# axis.text.y = element_text(size = 25),
@@ -1181,7 +1183,7 @@ kOT_sim_AGG = function(work_dir){
 		# legend.text = element_text(size = 34),
 		plot.title = element_text(hjust = 0.5))##,size = 38))
 	
-	# New plot for paper
+	# Plot for paper
 	hBETA2 = DIST2 = NULL
 	if( TRUE ){
 		ures2 = ures[which(ures$SOFT == "ROKET" & ures$hBETA >= 0 
