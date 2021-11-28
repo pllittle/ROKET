@@ -1029,6 +1029,9 @@ kOT_sim_REG = function(work_dir,NN,nGENE,nPATH,SCEN,rr){
 	
 }
 
+#' @title kOT_sim_AGG
+#' @param work_dir A full path to create "sim_ROKET" and subdirectories
+#' @export
 kOT_sim_AGG = function(work_dir){
 	
 	my_dirs = setdirs(work_dir = work_dir)
@@ -1142,42 +1145,21 @@ kOT_sim_AGG = function(work_dir){
 		saveRDS(ures,ures_fn)
 		
 	}
+	
+	# Polish
 	ures = readRDS(ures_fn)
-	
-	if( TRUE ){ # Polish
-		ures[1:3,]
-		smart_table(ures$DIST)
-		tmp_lev = sort(unique(ures$DIST)); tmp_lev
-		tmp_lev = tmp_lev[c(6,5,4,3,2,1,8)]; tmp_lev
-		# tmp_lev = tmp_lev[c(6,7,8,9,10,11,12,13,5,4,3,2,1,14)]; tmp_lev
-		# tmp_lev = tmp_lev[c(6,7,8,9,10,5,4,3,2,1,11)]; tmp_lev
-		ures$DIST2 = factor(ures$DIST,levels = tmp_lev,
-			labels = c("Gene-Based (Bonf)","Gene-Based (Perm)",
-			# sprintf("Path-Based (Bonf%s)",c(1,2)),
-			# sprintf("Path-Based (Perm%s)",c(1,2)),
-			"Euclidean",sprintf("OT (\u03BB = %s)",c("\u221E","5.0","1.0","0.5")),
-			"OT (omnibus)"))
-		
-		ures$SCEN2 = factor(ures$SCEN,
-			levels = sort(unique(ures$SCEN)),
-			labels = paste0("Scenario ",sort(unique(ures$SCEN))))
-	}
+	ures[1:3,]
+	smart_table(ures$DIST)
+	tmp_lev = sort(unique(ures$DIST)); tmp_lev
+	tmp_lev = tmp_lev[c(6,1,5,4,3,2,7)]; tmp_lev
+	ures$DIST2 = factor(ures$DIST,levels = tmp_lev,
+		labels = c("Gene-Based (Perm)","Euclidean",
+		sprintf("OT (\u03BB = %s)",c("\u221E","5.0","1.0","0.5")),
+		"OT (omnibus)"))
+	ures$SCEN2 = factor(ures$SCEN,
+		levels = sort(unique(ures$SCEN)),
+		labels = paste0("Scenario ",sort(unique(ures$SCEN))))
 	# dim(ures); ures[1:3,]
-	
-	my_theme = theme(legend.position = c("none","bottom")[2],
-		text = element_text(size = 40),
-		axis.text.x = element_text(size = 25),
-		# axis.text.y = element_text(size = 25),
-		# strip.text.y = element_text(size = 18),
-		panel.background = element_blank(),
-		panel.grid.major = element_line(colour = "grey50",
-			size = 1,linetype = "dotted"),
-		panel.spacing.x = unit(2,"lines"),
-		panel.spacing.y = unit(2,"lines"),
-		legend.key.width = unit(2,"line"),
-		# legend.title = element_text(size = 34),
-		# legend.text = element_text(size = 34),
-		plot.title = element_text(hjust = 0.5))##,size = 38))
 	
 	# Plot for paper
 	hBETA2 = DIST2 = NULL
@@ -1233,7 +1215,7 @@ kOT_sim_AGG = function(work_dir){
 		nPVAL = rds$fin_nom_PVAL
 		names(nPVAL)
 		
-		wPVAL = c("nom_PVAL")[1]
+		wPVAL = c("nom_PVAL")
 		out = c()
 		for(SCEN in seq(4)){
 			# SCEN = 1
