@@ -185,6 +185,49 @@ run_myOTs = function(ZZ,COST,EPS,LAMBDA1,LAMBDA2,
 
 
 # ----------
+# Kernel Regression Hypothesis Testing
+# ----------
+
+#' @title kernTEST
+#' @param RESI A numeric vector of null model residuals
+#'	\code{names(RESI)} must be set to maintain sample ordering
+#' @param KK A list containing double-centered positive semi-definite
+#'	kernel matrices. Refer to \code{MiRKAT::D2K()} for transforming 
+#'	distance matrices to kernel matrices. To colnames() and rownames()
+#'	per kernel matrix must match names(RESI). Also set names(KK)
+#'	to keep track of each kernel matrix
+#' @param nPERMS A positive integer to specify the number of
+#'	permutation-based p-value calculation
+#' @param iter1 A positive integer for displaying a dot for every
+#'	'iter1' iterations through the loop's progress
+#' @param iter2 A positive integer for displaying a newline for every
+#'	'iter2' iterations through the loop's progress
+#' @param verbose Boolean set to TRUE to display verbose progress output
+#' @export
+kernTEST = function(RESI,KK,nPERMS,iter1 = 50,iter2 = 1e3,verbose){
+	
+	if( is.null(names(RESI)) )
+		stop("Specify names(RESI)")
+	if( is.null(names(KK)) )
+		stop("Specify names(KK) to track kernel matrices")
+	samp_names = names(RESI)
+	for(kk in names(KK)){
+		if( !all(samp_names == rownames(KK[[kk]])) )
+			stop(sprintf("Sample row mismatch in KK[[%s]]",kk))
+		if( !all(samp_names == colnames(KK[[kk]])) )
+			stop(sprintf("Sample col mismatch in KK[[%s]]",kk))
+	}
+	
+	out_test = Rcpp_KernTest(RESI = RESI,KK = KK,
+		nPERMS = nPERMS,iter1 = iter1,iter2 = iter2,
+		verbose = verbose)
+	names(out_test$PVALs) = names(KK)
+	
+	return(out_test)
+}
+
+
+# ----------
 # Optimal transport simulation
 # ----------
 OT_sim = function(){
