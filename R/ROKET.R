@@ -1341,10 +1341,13 @@ NULL
 # bb = strsplit(getwd(),"/")[[1]]; pack_dir = paste(bb[-length(bb)],collapse = "/")
 # pack = strsplit(pack_dir,"/")[[1]]; pack = pack[length(pack)]
 # if( pack %in% installed.packages()[,1] ){ remove.packages(pack); q("no")}
+## usethis::use_vignette("test")
 # Rcpp::compileAttributes(pkgdir = pack_dir)
 # devtools::document(pkg = pack_dir); usethis::use_gpl3_license()
 # devtools::check(pkg = pack_dir,manual = TRUE,cran = TRUE,error_on = "note")
-# devtools::install(pack_dir)
+# Sys.setenv("RSTUDIO_PANDOC" = "C:/Program Files/RStudio/bin/pandoc")
+# check_pandoc = rmarkdown::pandoc_available(); check_pandoc
+# devtools::install(pack_dir,build_vignettes = TRUE)
 
 
 ###

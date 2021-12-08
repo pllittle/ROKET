@@ -1,0 +1,343 @@
+---
+title: "Introduction"
+author: "Paul Little"
+date: "`r Sys.Date()`"
+header-includes:
+  - \usepackage{amsmath}
+  - \usepackage{amssymb}
+  - \usepackage{bm}
+output:
+  html_document:
+    theme: journal
+    highlight: tango
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: true
+      smooth_scroll: false
+    fig_width: 5
+vignette: >
+  %\VignetteIndexEntry{test}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r include = FALSE}
+knitr::opts_chunk$set(
+	collapse = TRUE,comment = "#>",
+	echo = TRUE,cache = FALSE,
+	dev = "png")
+```
+
+\def\T{\text{T}}
+\newcommand{\bf}[1]{\mathbf{#1}}
+\newcommand{\bigPar}[1]{\left(#1\right)}
+
+# Overview
+
+Assuming all software dependencies and ROKET installation are installed, we can begin.
+
+```{r setup,warning = FALSE}
+rm(list = ls())
+# Load libraries
+library(ROKET)
+library(ggplot2)
+library(reshape2)
+library(smartr)
+
+# List package's exported functions
+ls("package:ROKET")
+
+# Fix seed
+set.seed(1)
+```
+
+# Motivation
+
+For $i = 1,\ldots,N$ and $g = 1,\ldots,G$, let 
+
+* $Z_{ig} = 1$ indicate the $i$th sample's $g$th gene is mutated and $Z_{ig} = 0$ otherwise
+* $\bf{Z}_i \equiv \bigPar{Z_{i1},\ldots,Z_{iG}}^\T$
+
+We would like to calculate the distance between the $i$th and $j$th samples in terms of mutated genes $\bf{Z}_i$ and $\bf{Z}_j$ or $d\bigPar{\bf{Z}_i,\bf{Z}_j}$.
+
+# Optimal Transport
+
+For the $i$th and $j$th samples, let
+
+* $\bf{P} =$ a $G$ by $G$ transport matrix
+* $P_{gh} =$ the value of the $g$th row and $h$th column of $\bf{P}$, denotes the mass transported between the $g$th gene of the $i$th sample and the $h$th gene of the $j$th sample
+* $\bf{W} =$ a $G$ by $G$ cost matrix, independent of samples
+* $W_{gh} =$ the value of the $g$th row and $h$th column of $\bf{W}$, denotes the cost to transport one unit of mass between the $g$th gene and $h$th gene
+* $\bf{P}^* = \text{argmin}_{\bf{P}} \bigPar{\sum_g \sum_h P_{gh} W_{gh}}$, the optimal transport matrix
+* $d\bigPar{\bf{Z}_i,\bf{Z}_j} = \min_{\bf{P}}\bigPar{\sum_g \sum_h P_{gh} W_{gh}}$
+
+## Balanced OT
+
+If the mass of the two vectors **are equal** or normalized such that $\sum_g Z_{ig} = \sum_g Z_{jg}$, we could use balanced optimal transport.
+
+## Unbalanced OT
+
+If the mass of the two vectors **are not equal**, $\sum_g Z_{ig} \neq \sum_g Z_{jg}$, we could use unbalanced optimal transport with penalty parameters.
+
+# Simulated Example
+
+The code below will simulate samples and mutated genes.
+
+```{r}
+# number of samples
+NN = 20
+NN_nms = sprintf("S%s",seq(NN))
+
+# number of genes
+GG = 10
+GG_nms = sprintf("G%s",seq(GG))
+
+# gene-gene similarity matrix
+GS = matrix(NA,GG,GG)
+dimnames(GS) = list(GG_nms,GG_nms)
+diag(GS) = 1
+
+gsim = sapply(seq(choose(n = GG,k = 2)),function(xx){
+  prop_same = 0.2 # % gene pairs "similar" to each other
+  bnd_same = 0.8 # lower bound on "similar" genes
+  same = rbinom(1,1,prop_same)
+  
+  if( same == 1 )
+    return(runif(1,bnd_same,1))
+  else if( same == 0 )
+    return(runif(1,0,1 - bnd_same))
+})
+
+GS[lower.tri(GS)] = gsim
+GS[upper.tri(GS)] = t(GS)[upper.tri(GS)]
+```
+
+Let's take a look at the gene similarity matrix.
+
+```{r fig.dim = c(6,5),echo = FALSE,results = "hide"}
+
+show_tile = function(MAT,LABEL,TYPE = NULL,
+  LABx = NULL,LABy = NULL,DIGITS = 1){
+  
+  min_val = min(MAT)
+  max_val = max(MAT)
+  med_val = (min_val + max_val) / 2
+  
+  if( is.null(TYPE) ) stop("Specify TYPE")
+  
+  if( isSymmetric(MAT) )
+    MAT[upper.tri(MAT,diag = !TRUE)] = NA
+  
+  if( TYPE == "GSIM" ){
+    max_val = 1
+    med_val = 0.5
+  }
+  # else if( TYPE == "DIST" ){
+  #  max_val = max(c(1,max(MAT)))
+  #}
+  
+  dat = melt(MAT,na.rm = TRUE)
+  # class(dat); dim(dat); dat[1:5,]
+  
+  gg = ggplot(data = dat,aes(x = Var1,y = Var2,fill = value)) +
+    geom_tile(color = "black") + ggtitle(LABEL) +
+    labs(fill = "Value")
+  
+  if( is.null(LABx) ){
+    gg = gg + xlab("")
+  } else {
+    gg = gg + xlab(LABx)
+  }
+  
+  if( is.null(LABy) ){
+    gg = gg + ylab("")
+  } else {
+    gg = gg + ylab(LABy)
+  }
+  
+  # if( max(dim(MAT)) <= 10 )
+  gg = gg + geom_text(mapping = aes(label = smart_digits(value,DIGITS)))
+  
+  if( TYPE %in% c("GSIM","DIST") ){
+  	gg = gg + scale_fill_gradient2(midpoint = med_val,low = "deepskyblue",
+  		mid = "white",high = "red",limit = c(min_val,max_val))
+  } else if( TYPE == "MUT" ){
+    gg = gg + scale_fill_gradient2(low = "black",
+  		high = "red",limit = c(min_val,max_val))
+  }
+  
+  gg = gg + guides(fill = guide_colorbar(frame.colour = "black"))
+  gg = gg + theme(legend.position = "right",
+  		# legend.key.width = unit(1.5,'cm'),
+  		legend.key.height = unit(1,'cm'),
+  		legend.text = element_text(size = 12),
+  		legend.title = element_text(size = 12,hjust = 0.5),
+  		text = element_text(size = 12),
+  		panel.background = element_blank(),
+  		panel.grid.major = element_line(colour = "grey50",
+  			size = 0.5,linetype = "dotted"),
+  		axis.text = element_text(face = "italic"),
+  		axis.text.x = element_text(angle = 0),
+  		plot.title = element_text(hjust = 0.5))
+  
+  return(gg)
+}
+
+hout = hclust(as.dist(1 - GS))
+ord = hout$labels[hout$order]
+show_tile(MAT = GS[ord,ord],
+  LABEL = "Simulated Gene Similarity",
+  TYPE = "GSIM",DIGITS = 2)
+```
+
+```{r fig.dim = c(8,4)}
+# Mutated gene statuses
+prob_mut = 0.3
+prob_muts = c(1 - prob_mut,prob_mut)
+while(TRUE){
+  ZZ = matrix(sample(c(0,1),NN*GG,replace = TRUE,prob = prob_muts),NN,GG)
+  
+  # Ensure each sample has at least one mutated gene
+  if( min(rowSums(ZZ)) > 0 ) break
+}
+dimnames(ZZ) = list(NN_nms,GG_nms)
+
+show_tile(MAT = ZZ,
+  LABEL = "Mutation Status: Gene by Sample",
+  TYPE = "MUT",DIGITS = 0)
+
+# Store all distances
+DD = array(data = NA,dim = c(NN,NN,5))
+dimnames(DD)[1:2] = list(NN_nms,NN_nms)
+dimnames(DD)[[3]] = c("EUC",sprintf("OT_LAM%s",c(0.5,1.0,5.0,Inf)))
+```
+
+## Euclidean distance
+
+We can calculate the Euclidean distance, which does not incorporate relationships between pairs of genes.
+
+```{r fig.dim = c(8,5)}
+DD[,,"EUC"] = as.matrix(dist(ZZ,diag = TRUE,upper = TRUE))
+
+hout = hclust(as.dist(DD[,,"EUC"]))
+ord = hout$labels[hout$order]
+show_tile(MAT = DD[,,"EUC"][ord,ord],
+  LABEL = "Euclidean Pairwise Distances",
+  TYPE = "DIST",DIGITS = 2)
+```
+
+## OT distance
+
+### Code between two samples
+
+To demonstrate ROKET's functionality, the code below will run balanced OT (pre-normalizing input vectors) between two samples. Regardless of the values specified by `LAMBDA1` and `LAMBDA2` arguments, we need to set `balance = TRUE`. The OT cost matrix argument corresponds to `1 - GS`, one minus the gene similarity matrix.
+
+```{r fig.dim = c(8,5)}
+ii = 1
+jj = 2
+ZZ[c(ii,jj),]
+outOT = run_myOT(XX = ZZ[ii,],YY = ZZ[jj,],
+  COST = 1 - GS,EPS = 1e-3,LAMBDA1 = 1,
+  LAMBDA2 = 1,balance = TRUE,show = FALSE)
+# str(outOT)
+
+# Optimal transport matrix
+show_tile(MAT = outOT$OT,LABEL = "Balanced OT",
+  TYPE = "DIST",LABx = sprintf("Sample %s",ii),
+  LABy = sprintf("Sample %s",jj),
+  DIGITS = 2)
+
+# Pairwise distance
+outOT$DIST_1
+
+# Check OT marginals
+round(rowSums(outOT$OT),2)
+round(colSums(outOT$OT),2)
+```
+
+Let's try again but with unbalanced OT and $\lambda = 0.5$. We need to set `balance = FALSE` and specify `LAMBDA1 = 0.5` and `LAMBDA2 = 0.5`.
+
+```{r fig.dim = c(8,5)}
+ZZ[c(ii,jj),]
+LAM = 0.5
+outOT = run_myOT(XX = ZZ[ii,],YY = ZZ[jj,],
+  COST = 1 - GS,EPS = 1e-3,LAMBDA1 = LAM,
+  LAMBDA2 = LAM,balance = FALSE,show = FALSE)
+str(outOT)
+
+# Optimal transport matrix
+show_tile(MAT = outOT$OT,
+  LABEL = "Unbalanced OT",TYPE = "DIST",
+  LABx = sprintf("Sample %s",ii),
+  LABy = sprintf("Sample %s",jj),
+  DIGITS = 2)
+
+# Pairwise distance
+outOT$DIST_1
+
+# Check OT marginals
+round(rowSums(outOT$OT),2)
+round(colSums(outOT$OT),2)
+```
+
+### Code between all sample pairs
+
+ROKET can run optimal transport calculations across all $n$ choose 2 samples. Below is code to run balanced OT.
+
+```{r fig.dim = c(8,5)}
+outOTs = run_myOTs(ZZ = t(ZZ),COST = 1 - GS,
+  EPS = 1e-3,balance = TRUE,LAMBDA1 = 1,
+  LAMBDA2 = 1,conv = 1e-5,max_iter = 3e3,
+  ncores = 1,show = FALSE)
+outOTs$DIST[1:5,1:5]
+
+hout = hclust(as.dist(outOTs$DIST))
+ord = hout$labels[hout$order]
+show_tile(MAT = outOTs$DIST[ord,ord],
+  LABEL = "Balanced OT Distances",
+  TYPE = "DIST",DIGITS = 1)
+```
+
+We can run calculations for various $\lambda$ values.
+
+```{r fig.dim = c(8,5)}
+LAMs = c(0.5,1.0,5.0,Inf)
+
+for(LAM in LAMs){
+  # LAM = LAMs[2]
+  
+  BAL = ifelse(is.infinite(LAM),TRUE,FALSE)
+  LAM2 = ifelse(BAL,1,LAM)
+  
+  outOTs = run_myOTs(ZZ = t(ZZ),COST = 1 - GS,
+    EPS = 1e-3,balance = BAL,LAMBDA1 = LAM2,
+    LAMBDA2 = LAM2,conv = 1e-5,max_iter = 3e3,
+    ncores = 1,show = FALSE)
+  
+  hout = hclust(as.dist(outOTs$DIST))
+  ord = hout$labels[hout$order]
+  gg = show_tile(MAT = outOTs$DIST[ord,ord],
+    LABEL = sprintf("OT Distances (Lambda = %s)",LAM),
+    TYPE = "DIST",DIGITS = 2)
+  print(gg)
+  
+  DD[,,sprintf("OT_LAM%s",LAM)] = outOTs$DIST
+  rm(outOTs)
+}
+
+```
+
+We can see that Euclidean distance calculations on gene mutation statuses alone does not lead to strong evidence of sample clusters. However optimal transport-based distance calculations with integrated gene-gene similarities suggest some sample clusters.
+
+# Regression
+
+The next step is to transform distance matrices into centered kernel matrices and perform kernel regression.
+
+# References
+
+# Session Info
+
+```{r}
+sessionInfo()
+```

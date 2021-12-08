@@ -1,5 +1,13 @@
 # ROKET
 
+## To Dos
+
+* Toy examples
+* Reference other existing softwares, python
+* Sample figures and example code
+
+## Introduction
+
 This package is designed to perform optimal transport and hypothesis testing on kernel matrices when performing kernel regression. The software is optimized for calculating distance between pairs of samples based on the pairs of mutated gene statuses.
 
 ## Installation

@@ -4,3 +4,4 @@
 *.o
 *.gz
 *.dll
+inst/doc

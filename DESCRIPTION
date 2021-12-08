@@ -14,3 +14,7 @@ Imports: data.table, Rcpp, smartr, ggplot2, survival,
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 7.1.2
 License: GPL (>= 3)
+Suggests: 
+    rmarkdown,
+    knitr
+VignetteBuilder: knitr
