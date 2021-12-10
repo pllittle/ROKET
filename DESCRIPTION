@@ -13,6 +13,6 @@ Imports: Rcpp, smartr, ggplot2, survival, MiRKAT
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 7.1.2
 License: GPL (>= 3)
-Suggests: 
-    rmarkdown, knitr, reshape2
+Suggests: rmarkdown, knitr, reshape2,
+	ggdendro
 VignetteBuilder: knitr

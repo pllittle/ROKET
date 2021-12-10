@@ -4,7 +4,7 @@
 \alias{kernTEST}
 \title{kernTEST}
 \usage{
-kernTEST(RESI, KK, nPERMS, iter1 = 50, iter2 = 1000, verbose)
+kernTEST(RESI, KK, nPERMS = 1e+05, iter1 = 50, iter2 = 1000, verbose)
 }
 \arguments{
 \item{RESI}{A numeric vector of null model residuals
@@ -12,9 +12,9 @@ kernTEST(RESI, KK, nPERMS, iter1 = 50, iter2 = 1000, verbose)
 
 \item{KK}{A list containing double-centered positive semi-definite
 kernel matrices. Refer to \code{MiRKAT::D2K()} for transforming 
-distance matrices to kernel matrices. To colnames() and rownames()
-per kernel matrix must match names(RESI). Also set names(KK)
-to keep track of each kernel matrix}
+distance matrices to kernel matrices. The \code{colnames()} and 
+\code{rownames()} per kernel matrix must match \code{names(RESI)}.
+Also set names(KK) to keep track of each kernel matrix.}
 
 \item{nPERMS}{A positive integer to specify the number of
 permutation-based p-value calculation}

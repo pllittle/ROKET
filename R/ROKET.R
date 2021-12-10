@@ -193,9 +193,9 @@ run_myOTs = function(ZZ,COST,EPS,LAMBDA1,LAMBDA2,
 #'	\code{names(RESI)} must be set to maintain sample ordering
 #' @param KK A list containing double-centered positive semi-definite
 #'	kernel matrices. Refer to \code{MiRKAT::D2K()} for transforming 
-#'	distance matrices to kernel matrices. To colnames() and rownames()
-#'	per kernel matrix must match names(RESI). Also set names(KK)
-#'	to keep track of each kernel matrix
+#'	distance matrices to kernel matrices. The \code{colnames()} and 
+#'	\code{rownames()} per kernel matrix must match \code{names(RESI)}.
+#'	Also set names(KK) to keep track of each kernel matrix.
 #' @param nPERMS A positive integer to specify the number of
 #'	permutation-based p-value calculation
 #' @param iter1 A positive integer for displaying a dot for every
@@ -204,7 +204,8 @@ run_myOTs = function(ZZ,COST,EPS,LAMBDA1,LAMBDA2,
 #'	'iter2' iterations through the loop's progress
 #' @param verbose Boolean set to TRUE to display verbose progress output
 #' @export
-kernTEST = function(RESI,KK,nPERMS,iter1 = 50,iter2 = 1e3,verbose){
+kernTEST = function(RESI,KK,nPERMS = 1e5,
+	iter1 = 50,iter2 = 1e3,verbose){
 	
 	if( is.null(names(RESI)) )
 		stop("Specify names(RESI)")
@@ -1346,7 +1347,7 @@ NULL
 # Sys.setenv("RSTUDIO_PANDOC" = "C:/Program Files/RStudio/bin/pandoc")
 # check_pandoc = rmarkdown::pandoc_available(); check_pandoc
 #### usethis::use_vignette(name = "test",title = "Testing")
-# devtools::check(pkg = pack_dir,manual = TRUE,cran = !TRUE,error_on = c("warning","note")[1],vignettes = TRUE)
+# devtools::check(pkg = pack_dir,manual = TRUE,cran = FALSE,error_on = c("warning","note")[1],vignettes = TRUE)
 # devtools::install(pack_dir,build_vignettes = TRUE)
 
 

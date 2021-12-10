@@ -20,102 +20,149 @@ vignette: >
   %\VignetteIndexEntry{test}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+bibliography: references.bib
 ---
 
 ```{r include = FALSE}
+rm(list = ls())
+
 knitr::opts_chunk$set(
 	collapse = TRUE,comment = "#>",
 	echo = TRUE,cache = FALSE,
 	dev = "png")
+ot_eval = TRUE
 ```
 
 \def\T{\text{T}}
 \newcommand{\bf}[1]{\mathbf{#1}}
 \newcommand{\bigPar}[1]{\left(#1\right)}
+\newcommand{\bigCur}[1]{\left\{#1\right\}}
+\newcommand{\bcSqu}[2]{\left[#1 \middle| #2\right]}
+\newcommand{\cE}[2]{E\bcSqu{#1}{#2}}
+\newcommand{\nexp}[1]{\exp\bigCur{#1}}
+\newcommand{\ind}[1]{1\bigCur{#1}}
+\newcommand{\w}[1]{\widehat{#1}}
 
 # Overview
 
-Assuming all software dependencies and ROKET installation are installed, we can begin.
+Assuming all software dependencies and **ROKET** installation are installed, we can begin.
 
 ```{r setup,warning = FALSE}
-rm(list = ls())
 # Load libraries
 library(ROKET)
 library(ggplot2)
 library(reshape2)
 library(smartr)
+library(ggdendro)
 
 # List package's exported functions
 ls("package:ROKET")
 
 # Fix seed
-set.seed(1)
+set.seed(2)
 ```
 
-# Motivation
+# Distance Motivation
 
 For $i = 1,\ldots,N$ and $g = 1,\ldots,G$, let 
 
 * $Z_{ig} = 1$ indicate the $i$th sample's $g$th gene is mutated and $Z_{ig} = 0$ otherwise
 * $\bf{Z}_i \equiv \bigPar{Z_{i1},\ldots,Z_{iG}}^\T$
 
-We would like to calculate the distance between the $i$th and $j$th samples in terms of mutated genes $\bf{Z}_i$ and $\bf{Z}_j$ or $d\bigPar{\bf{Z}_i,\bf{Z}_j}$.
+We would like to calculate the distance between the $i$th and $j$th samples in terms of mutated genes $\bf{Z}_i$ and $\bf{Z}_j$, denoted by $d\bigPar{\bf{Z}_i,\bf{Z}_j}$.
 
-# Optimal Transport
+## Optimal Transport
+
+### Background papers
+
+Several optimal transport (OT) references to get familiarized with the framework, objective functions, updating equations, entropic regularizations, types of OT are provided:
+
+* @cuturi2013sinkhorn, [paper](https://arxiv.org/pdf/1306.0895.pdf)
+* @zhang2020review, [paper](https://arxiv.org/pdf/2008.02995.pdf)
+* @nath2020statistical, [paper](https://arxiv.org/pdf/2002.03179.pdf)
+* @fatras2021unbalanced, [paper](http://proceedings.mlr.press/v139/fatras21a/fatras21a.pdf)
+* @chapel2021unbalanced, [paper](https://arxiv.org/pdf/2106.04145.pdf)
+
+### Basic Idea
 
 For the $i$th and $j$th samples, let
 
-* $\bf{P} =$ a $G$ by $G$ transport matrix
-* $P_{gh} =$ the value of the $g$th row and $h$th column of $\bf{P}$, denotes the mass transported between the $g$th gene of the $i$th sample and the $h$th gene of the $j$th sample
-* $\bf{W} =$ a $G$ by $G$ cost matrix, independent of samples
+* $\bf{P}^{(ij)} =$ an unknown $G$ by $G$ transport matrix to be estimated
+* $P_{gh}^{(ij)} =$ the value of the $g$th row and $h$th column of $\bf{P}$, denotes the mass transported between the $g$th gene of the $i$th sample and the $h$th gene of the $j$th sample
+* $\bf{W} =$ a known $G$ by $G$ cost matrix, independent of samples
 * $W_{gh} =$ the value of the $g$th row and $h$th column of $\bf{W}$, denotes the cost to transport one unit of mass between the $g$th gene and $h$th gene
-* $\bf{P}^* = \text{argmin}_{\bf{P}} \bigPar{\sum_g \sum_h P_{gh} W_{gh}}$, the optimal transport matrix
-* $d\bigPar{\bf{Z}_i,\bf{Z}_j} = \min_{\bf{P}}\bigPar{\sum_g \sum_h P_{gh} W_{gh}}$
+* The space of transport matrices $\bf{P}^{(ij)}$ to search over is governed through the penalized divergence between $\bf{Z}_i$ and the row sums of $\bf{P}^{(ij)}$ as well as between $\bf{Z}_j$ and the column sums of $\bf{P}^{(ij)}$
+* $\w{\bf{P}^{(ij)}} = \text{argmin}_{\bf{P}^{(ij)}} \bigPar{\sum_g \sum_h P_{gh}^{(ij)} W_{gh}}$, the optimal transport matrix
+* $d\bigPar{\bf{Z}_i,\bf{Z}_j} = \sum_g \sum_h \w{P_{gh}^{(ij)}} W_{gh}$
 
-## Balanced OT
+### Balanced OT
 
 If the mass of the two vectors **are equal** or normalized such that $\sum_g Z_{ig} = \sum_g Z_{jg}$, we could use balanced optimal transport.
 
-## Unbalanced OT
+### Unbalanced OT
 
 If the mass of the two vectors **are not equal**, $\sum_g Z_{ig} \neq \sum_g Z_{jg}$, we could use unbalanced optimal transport with penalty parameters.
 
-# Simulated Example
+## Simulated Example
 
-The code below will simulate samples and mutated genes.
+The code below will simulate samples and mutated genes. We welcome the reader to manipulate the following input arguments:
 
-```{r}
+* `NN` for sample size,
+* `PP` for number of pathways,
+* `GG` for number of genes, and 
+* `bnd_same` the lower bound gene similarity for genes sharing the same pathway and `1 - bnd_same`, an upper bound on gene similarity for genes not sharing the same pathway
+
+Ideally, `PP` should be much less than `GG` to allow multiple genes to be allocated to each pathway.
+
+```{r inputs,eval = ot_eval}
 # number of samples
-NN = 20
+NN = 30
 NN_nms = sprintf("S%s",seq(NN))
 
+# number of pathways
+PP = 4
+PP_nms = sprintf("P%s",seq(PP))
+
 # number of genes
-GG = 10
+GG = 30
 GG_nms = sprintf("G%s",seq(GG))
+
+# bound for gene similarity of two genes on same or different pathway
+bnd_same = 0.75
+
+# Gene and pathway relationship
+GP = smart_df(PATH = sample(seq(PP),GG,replace = TRUE),
+  GENE = seq(GG))
+table(GP$PATH)
 
 # gene-gene similarity matrix
 GS = matrix(NA,GG,GG)
 dimnames(GS) = list(GG_nms,GG_nms)
 diag(GS) = 1
 
-gsim = sapply(seq(choose(n = GG,k = 2)),function(xx){
-  prop_same = 0.2 # % gene pairs "similar" to each other
-  bnd_same = 0.8 # lower bound on "similar" genes
-  same = rbinom(1,1,prop_same)
-  
-  if( same == 1 )
-    return(runif(1,bnd_same,1))
-  else if( same == 0 )
-    return(runif(1,0,1 - bnd_same))
-})
+tmp_mat = t(combn(seq(GG),2))
 
-GS[lower.tri(GS)] = gsim
-GS[upper.tri(GS)] = t(GS)[upper.tri(GS)]
+for(ii in seq(nrow(tmp_mat))){
+  
+  G1 = tmp_mat[ii,1]
+  G2 = tmp_mat[ii,2]
+  same = GP$PATH[GP$GENE == G1] == GP$PATH[GP$GENE == G2]
+  
+  if( same )
+    GS[G1,G2] = runif(1,bnd_same,1)
+  else
+    GS[G1,G2] = runif(1,0,1 - bnd_same)
+  
+}
+GS[lower.tri(GS)] = t(GS)[lower.tri(GS)]
+# round(GS,3)
 ```
+
+### Gene-Gene Similarity
 
 Let's take a look at the gene similarity matrix.
 
-```{r fig.dim = c(6,5),echo = FALSE,results = "hide"}
+```{r gene_sim,fig.dim = c(8,5),echo = FALSE,results = "hide",eval = ot_eval}
 
 show_tile = function(MAT,LABEL,TYPE = NULL,
   LABx = NULL,LABy = NULL,DIGITS = 1){
@@ -156,8 +203,8 @@ show_tile = function(MAT,LABEL,TYPE = NULL,
     gg = gg + ylab(LABy)
   }
   
-  # if( max(dim(MAT)) <= 10 )
-  gg = gg + geom_text(mapping = aes(label = smart_digits(value,DIGITS)))
+  if( max(dim(MAT)) <= 10 && DIGITS >= 0 )
+    gg = gg + geom_text(mapping = aes(label = smart_digits(value,DIGITS)))
   
   if( TYPE %in% c("GSIM","DIST") ){
   	gg = gg + scale_fill_gradient2(midpoint = med_val,low = "deepskyblue",
@@ -167,7 +214,10 @@ show_tile = function(MAT,LABEL,TYPE = NULL,
   		high = "red",limit = c(min_val,max_val))
   }
   
-  gg = gg + guides(fill = guide_colorbar(frame.colour = "black"))
+  gg = gg + guides(fill = guide_colorbar(frame.colour = "black")) +
+    scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+    scale_y_discrete(guide = guide_axis(n.dodge = 2))
+  
   gg = gg + theme(legend.position = "right",
   		# legend.key.width = unit(1.5,'cm'),
   		legend.key.height = unit(1,'cm'),
@@ -186,14 +236,23 @@ show_tile = function(MAT,LABEL,TYPE = NULL,
 
 hout = hclust(as.dist(1 - GS))
 ord = hout$labels[hout$order]
+
 show_tile(MAT = GS[ord,ord],
   LABEL = "Simulated Gene Similarity",
   TYPE = "GSIM",DIGITS = 2)
+
+show_tile(MAT = 1 - GS[ord,ord],
+  LABEL = "Simulated Gene Dissimilarity",
+  TYPE = "GSIM",DIGITS = 2)
 ```
 
-```{r fig.dim = c(8,4)}
+The function `show_tile()` is inherent to this vignette and not part of the **ROKET** package.
+
+### Simulate mutated gene statuses
+
+```{r gene_muts,fig.dim = c(8,6),eval = ot_eval}
 # Mutated gene statuses
-prob_mut = 0.3
+prob_mut = 0.2
 prob_muts = c(1 - prob_mut,prob_mut)
 while(TRUE){
   ZZ = matrix(sample(c(0,1),NN*GG,replace = TRUE,prob = prob_muts),NN,GG)
@@ -213,11 +272,26 @@ dimnames(DD)[1:2] = list(NN_nms,NN_nms)
 dimnames(DD)[[3]] = c("EUC",sprintf("OT_LAM%s",c(0.5,1.0,5.0,Inf)))
 ```
 
-## Euclidean distance
+We can look at the distribution of gene mutation frequencies.
+
+```{r mutfreq,fig.dim = c(8,5),eval = ot_eval}
+freq = colSums(ZZ); # freq
+dat = smart_df(GENE = names(freq),FREQ = as.integer(freq))
+dat$GENE = factor(dat$GENE,levels = names(sort(freq,decreasing = TRUE)))
+# dat
+
+ggplot(data = dat,mapping = aes(x = GENE,y = FREQ)) +
+  geom_bar(stat = "identity") +
+  xlab("Gene") + ylab("Mutation Frequency") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
+
+```
+
+### Euclidean distance
 
 We can calculate the Euclidean distance, which does not incorporate relationships between pairs of genes.
 
-```{r fig.dim = c(8,5)}
+```{r euc,fig.dim = c(8,5),eval = ot_eval}
 DD[,,"EUC"] = as.matrix(dist(ZZ,diag = TRUE,upper = TRUE))
 
 hout = hclust(as.dist(DD[,,"EUC"]))
@@ -227,70 +301,67 @@ show_tile(MAT = DD[,,"EUC"][ord,ord],
   TYPE = "DIST",DIGITS = 2)
 ```
 
-## OT distance
+### OT distance
 
-### Code between two samples
+#### Code between two samples
 
-To demonstrate ROKET's functionality, the code below will run balanced OT (pre-normalizing input vectors) between two samples. Regardless of the values specified by `LAMBDA1` and `LAMBDA2` arguments, we need to set `balance = TRUE`. The OT cost matrix argument corresponds to `1 - GS`, one minus the gene similarity matrix.
+To demonstrate **ROKET**'s functionality, the code below will run balanced OT (pre-normalizing input vectors) between two samples. Regardless of the values specified by `LAMBDA1` and `LAMBDA2` arguments, we need to set `balance = TRUE`. The OT cost matrix argument corresponds to `1 - GS`, one minus the gene similarity matrix.
 
-```{r fig.dim = c(8,5)}
+```{r balOT,fig.dim = c(8,5),eval = ot_eval}
+# Pick two samples
 ii = 1
 jj = 2
-ZZ[c(ii,jj),]
+ZZ[c(ii,jj),colSums(ZZ[c(ii,jj),]) > 0]
 outOT = run_myOT(XX = ZZ[ii,],YY = ZZ[jj,],
   COST = 1 - GS,EPS = 1e-3,LAMBDA1 = 1,
   LAMBDA2 = 1,balance = TRUE,show = FALSE)
 # str(outOT)
 
 # Optimal transport matrix
-show_tile(MAT = outOT$OT,LABEL = "Balanced OT",
+tmpOT = outOT$OT
+tmpOT = tmpOT[rowSums(tmpOT) > 0,colSums(tmpOT) > 0]
+show_tile(MAT = tmpOT,LABEL = "Balanced OT (showing only genes mutated in each sample)",
   TYPE = "DIST",LABx = sprintf("Sample %s",ii),
   LABy = sprintf("Sample %s",jj),
   DIGITS = 2)
 
 # Pairwise distance
 outOT$DIST_1
-
-# Check OT marginals
-round(rowSums(outOT$OT),2)
-round(colSums(outOT$OT),2)
 ```
 
 Let's try again but with unbalanced OT and $\lambda = 0.5$. We need to set `balance = FALSE` and specify `LAMBDA1 = 0.5` and `LAMBDA2 = 0.5`.
 
-```{r fig.dim = c(8,5)}
-ZZ[c(ii,jj),]
+```{r unbal_OT,fig.dim = c(8,5),eval = ot_eval}
+ZZ[c(ii,jj),colSums(ZZ[c(ii,jj),]) > 0]
 LAM = 0.5
 outOT = run_myOT(XX = ZZ[ii,],YY = ZZ[jj,],
   COST = 1 - GS,EPS = 1e-3,LAMBDA1 = LAM,
   LAMBDA2 = LAM,balance = FALSE,show = FALSE)
-str(outOT)
+# str(outOT)
 
 # Optimal transport matrix
-show_tile(MAT = outOT$OT,
-  LABEL = "Unbalanced OT",TYPE = "DIST",
+tmpOT = outOT$OT
+tmpOT = tmpOT[rowSums(tmpOT) > 0,colSums(tmpOT) > 0]
+show_tile(MAT = tmpOT,
+  LABEL = "Unbalanced OT (showing only genes mutated in each sample)",TYPE = "DIST",
   LABx = sprintf("Sample %s",ii),
   LABy = sprintf("Sample %s",jj),
   DIGITS = 2)
 
 # Pairwise distance
 outOT$DIST_1
-
-# Check OT marginals
-round(rowSums(outOT$OT),2)
-round(colSums(outOT$OT),2)
 ```
 
-### Code between all sample pairs
+#### Code between all sample pairs
 
-ROKET can run optimal transport calculations across all $n$ choose 2 samples. Below is code to run balanced OT.
+**ROKET** can run optimal transport calculations across all $N$ choose 2 samples. Below is code to run balanced OT.
 
-```{r fig.dim = c(8,5)}
+```{r all_samp_balOT,fig.dim = c(8,5),eval = ot_eval}
 outOTs = run_myOTs(ZZ = t(ZZ),COST = 1 - GS,
   EPS = 1e-3,balance = TRUE,LAMBDA1 = 1,
   LAMBDA2 = 1,conv = 1e-5,max_iter = 3e3,
   ncores = 1,show = FALSE)
-outOTs$DIST[1:5,1:5]
+# outOTs$DIST[1:5,1:5]
 
 hout = hclust(as.dist(outOTs$DIST))
 ord = hout$labels[hout$order]
@@ -299,9 +370,9 @@ show_tile(MAT = outOTs$DIST[ord,ord],
   TYPE = "DIST",DIGITS = 1)
 ```
 
-We can run calculations for various $\lambda$ values.
+We can run calculations for various $\lambda$ values. For shorthand, $\lambda$ = Inf corresponds to balanced OT.
 
-```{r fig.dim = c(8,5)}
+```{r full_OT_calc,fig.dim = c(8,5),eval = ot_eval}
 LAMs = c(0.5,1.0,5.0,Inf)
 
 for(LAM in LAMs){
@@ -328,16 +399,143 @@ for(LAM in LAMs){
 
 ```
 
-We can see that Euclidean distance calculations on gene mutation statuses alone does not lead to strong evidence of sample clusters. However optimal transport-based distance calculations with integrated gene-gene similarities suggest some sample clusters.
+### Dendrograms
 
-# Regression
+We can see that Euclidean distance calculations on gene mutation statuses alone does not lead to strong evidence of sample clusters. However optimal transport-based distance calculations with integrated gene-gene similarities provide stronger evidence of sample clusters.
 
-The next step is to transform distance matrices into centered kernel matrices and perform kernel regression.
+```{r dendro,fig.dim = c(8,5),eval = ot_eval}
+nms = dimnames(DD)[[3]]; nms
 
-# References
+for(nm in nms){
+  # nm = nms[1]
+  
+  hout = hclust(as.dist(DD[,,nm]))
+  hdend = as.dendrogram(hout)
+  dend_data = dendro_data(hdend,type = "rectangle")
+  gg = ggplot(dend_data$segments) +
+    geom_segment(aes(x = x,y = y,xend = xend,yend = yend)) +
+    ggtitle(nm) + xlab("") + ylab("") +
+    geom_text(data = dend_data$labels,
+      mapping = aes(x,y,label = label),vjust = 0.5,hjust = 1) +
+    theme_dendro() + coord_flip() +
+    theme(plot.title = element_text(hjust = 0.5))
+  print(gg)
+  rm(hout,hdend,dend_data,gg)
+}
+```
+
+# Kernel Regression and Association
+
+The next step is to transform distance matrices into centered kernel matrices to perform hypothesis testing on our constructed kernels.
+
+## Models
+
+For a binary or continuous outcome, $Y_i$, fitted with a generalized linear model, we have
+
+$$
+g\bigPar{E\bcSqu{Y_i}{\bf{X}_i,\bf{Z}_i}} = \bf{X}_i^\T \bf{\beta} + f(\bf{Z}_i) = \bf{X}_i^\T \bf{\beta} + \bf{K}_i^\T \bf{\alpha}
+$$
+
+and for Cox proportional hazards for survival outcomes, we have
+
+$$
+h(t;\bf{X}_i,\bf{Z}_i) = h_0(t) \nexp{\bf{X}_i^\T \bf{\beta} + f(\bf{Z}_i)} = h_0(t) \nexp{\bf{X}_i^\T \bf{\beta} + \bf{K}_i^\T \bf{\alpha}}
+$$
+
+where 
+
+* $h_0(t)$ is the baseline hazards function,
+* $g\bigPar{\cdot}$ is a known link function, 
+* $f\bigPar{\cdot}$ is assumed to be generated by a positive semi-definite function $K\bigPar{\cdot,\cdot}$ such that $f(\cdot)$ lies in the reproducing kernel Hilbert space $\mathcal{H}_K$,
+* $\bf{X}_i$ denotes $p$ baseline covariates to adjust for, and 
+* $\bf{K}_i = (K_{i1},\ldots,K_{iN})^\T$, the $i$th column of kernel matrix $\bf{K}$. 
+
+
+## Distance to Kernel
+
+The matrix $\bf{K}$ is constructed from the distance matrix (Euclidean or optimal transport), $\bf{D}$, by double centering the rows and columns of $\bf{D}$ with the formula
+
+$$
+\tilde{\bf{K}} = -\frac{1}{2} \bigPar{\bf{I}_N - \bf{J}_N \bf{J}_N^\T} \bf{D}^2 \bigPar{\bf{I}_N - \bf{J}_N \bf{J}_N^\T}
+$$
+
+where
+
+* $\bf{D}^2$ is the element-wise squared distance matrix,
+* $\bf{I}_N$ is an $N \times N$ identity matrix, and 
+* $\bf{J}_N$ is a column vector of $N$ ones. 
+
+Since $\tilde{\bf{K}}$ is not guaranteed to be positive semi-definite, we perform spectral decomposition and replace negative eigenvalues with zero and re-calculate the kernel to arrive at $\bf{K}$. 
+
+For a single candidate distance matrix, transform the distance matrix to a kernel matrix and convert the object into a list, denoted by the object `KK`, code is provided below from the R package, [**MiRKAT**](https://cran.r-project.org/web/packages/MiRKAT/index.html) [@zhao2015testing;@plantinga2017mirkat].
+
+```{r eval = FALSE}
+library(MiRKAT)
+
+# For example, with Euclidean distance
+KK = MiRKAT::D2K(D = DD[,,"EUC"])
+KK = list(EUC = KK)
+```
+
+If there are multiple distance matrices, in our case, contained in an array `DD`, store them into a list of kernel matrices `KK`. Example code is below.
+
+```{r eval = FALSE}
+KK = list()
+
+for(nm in dimnames(DD)[[3]]){
+  KK[[nm]] = MiRKAT::D2K(D = DD[,,nm])
+}
+```
+
+## Hypothesis Testing
+
+The user needs to pre-specify and fit the null model, 
+
+$$
+H_0: \bf{\alpha} = 0,
+$$
+
+of baseline covariates, $\bf{X}_i$, to one of the three outcome models to obtain continuous, logistic, or martingale residuals (`RESI`). Some example code is provided below.
+
+```{r eval = FALSE}
+# Continuous
+out_LM = lm(Y ~ .,data = data.frame(X))
+RESI = residuals(out_LM)
+
+# Logistic
+out_LOG = glm(Y ~ .,data = data.frame(X),family = "binomial")
+RESI = residuals(out_LOG)
+
+# Survival
+library(survival)
+out_CX = coxph(Surv(TIME,CENS) ~ .,data = data.frame(X))
+RESI = residuals(out_CX)
+```
+
+With one or multiple candidate kernels, **ROKET** will take
+
+* an R list of kernel matrices (`KK`), 
+* the residual vector (`RESI`), and 
+* user-supplied number of permutations (`nPERMS`) 
+
+to calculate individual kernel p-values as well as the omnibus test. The omnibus test assesses the significance of the minimum p-value kernel. The function `kernTEST` requires `names(RESI)` and dimension names per object as well as row/column names per kernel within `KK` are named for sample order consistency. Sample code is provided below. Setting `verbose = TRUE` allows the user to track the permutation's progress, especially when requesting hundreds of thousands of permutations.
+
+```{r eval = FALSE}
+nPERMS = 1e5
+
+ROKET::kernTEST(RESI = RESI,
+  KK = KK,nPERMS = nPERMS,
+  verbose = TRUE)
+```
+
+The final output contains individual kernel p-values and the omnibus p-value. 
+
+Have fun with utilizing kernel regression and optimal transport frameworks with **ROKET**!
 
 # Session Info
 
 ```{r}
 sessionInfo()
 ```
+
+# References
