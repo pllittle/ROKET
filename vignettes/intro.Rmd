@@ -388,9 +388,12 @@ for(LAM in LAMs){
   
   hout = hclust(as.dist(outOTs$DIST))
   ord = hout$labels[hout$order]
+  
+  LABEL = ifelse(BAL,"OT Distances (Balanced)",
+    sprintf("OT Distances (Lambda = %s)",LAM))
+  
   gg = show_tile(MAT = outOTs$DIST[ord,ord],
-    LABEL = sprintf("OT Distances (Lambda = %s)",LAM),
-    TYPE = "DIST",DIGITS = 2)
+    LABEL = LABEL,TYPE = "DIST",DIGITS = 2)
   print(gg)
   
   DD[,,sprintf("OT_LAM%s",LAM)] = outOTs$DIST

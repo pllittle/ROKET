@@ -1198,7 +1198,9 @@ kOT_sim_AGG = function(work_dir){
 	tmp_lev = tmp_lev[c(6,1,5,4,3,2,7)]; tmp_lev
 	ures$DIST2 = factor(ures$DIST,levels = tmp_lev,
 		labels = c("Gene-Based (Perm)","Euclidean",
-		sprintf("OT (\u03BB = %s)",c("\u221E","5.0","1.0","0.5")),
+		# sprintf("OT (\u03BB = %s)",c("\u221E","5.0","1.0","0.5")),
+		"OT (Balanced)",
+		sprintf("OT (\u03BB = %s)",c("5.0","1.0","0.5")),
 		"OT (omnibus)"))
 	ures$SCEN2 = factor(ures$SCEN,
 		levels = sort(unique(ures$SCEN)),
@@ -1347,8 +1349,9 @@ NULL
 # Sys.setenv("RSTUDIO_PANDOC" = "C:/Program Files/RStudio/bin/pandoc")
 # check_pandoc = rmarkdown::pandoc_available(); check_pandoc
 #### usethis::use_vignette(name = "test",title = "Testing")
-# devtools::check(pkg = pack_dir,manual = TRUE,cran = FALSE,error_on = c("warning","note")[1],vignettes = TRUE)
-# devtools::install(pack_dir,build_vignettes = TRUE)
+# make_vign = TRUE
+# devtools::check(pkg = pack_dir,manual = TRUE,cran = FALSE,error_on = c("warning","note")[1],vignettes = make_vign)
+# devtools::install(pack_dir,build_vignettes = make_vign)
 
 
 ###
