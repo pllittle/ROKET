@@ -6,7 +6,7 @@ This package is designed to perform optimal transport and hypothesis testing on 
 
 ## Installation
 
-```
+```R
 # Dependencies
 req_packs = c("devtools","Rcpp",
 	"RcppArmadillo","MiRKAT","ggplot2")
@@ -30,7 +30,7 @@ By default, the software runs a single thread and loops through all pairs of sam
 
 ## Vignette
 
-```
+```R
 # An Introduction
 vignette(topic = "intro",package = "ROKET")
 ```
