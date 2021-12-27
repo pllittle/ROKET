@@ -37,3 +37,7 @@ vignette(topic = "intro",package = "ROKET")
 
 ## Citation
 Little, P., Hsu, L., Sun, W. (2021). ROKET: Associating Somatic Mutation with Clinical Outcomes through Kernel Regression and Optimal Transport. *bioRxiv*. [[HTML](https://www.biorxiv.org/content/10.1101/2021.12.23.474064v1), [PDF](https://www.biorxiv.org/content/10.1101/2021.12.23.474064v1.full.pdf)]
+
+## Workflow
+
+R package and code to perform the manuscript's workflow are provided [here](https://github.com/pllittle/ROKETworkflow).
