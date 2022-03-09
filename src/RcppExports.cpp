@@ -11,17 +11,6 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// Rcpp_calc_rank
-arma::vec Rcpp_calc_rank(const arma::vec& aa);
-RcppExport SEXP _ROKET_Rcpp_calc_rank(SEXP aaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type aa(aaSEXP);
-    rcpp_result_gen = Rcpp::wrap(Rcpp_calc_rank(aa));
-    return rcpp_result_gen;
-END_RCPP
-}
 // Rcpp_run_OT
 arma::mat Rcpp_run_OT(const arma::vec& XX, const arma::vec& YY, const arma::mat& COST_XY, const double& EPS, const double& LAMBDA1, const double& LAMBDA2, const bool& balance, const bool& highLAM_lowMU, const double& conv, const arma::uword& max_iter, const bool& show, const arma::uword& show_iter);
 RcppExport SEXP _ROKET_Rcpp_run_OT(SEXP XXSEXP, SEXP YYSEXP, SEXP COST_XYSEXP, SEXP EPSSEXP, SEXP LAMBDA1SEXP, SEXP LAMBDA2SEXP, SEXP balanceSEXP, SEXP highLAM_lowMUSEXP, SEXP convSEXP, SEXP max_iterSEXP, SEXP showSEXP, SEXP show_iterSEXP) {
@@ -67,8 +56,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // Rcpp_KernTest
-Rcpp::List Rcpp_KernTest(const arma::vec& RESI, const Rcpp::List& KK, const arma::uword& nPERMS, const arma::uword& iter1, const arma::uword& iter2, const bool& verbose);
-RcppExport SEXP _ROKET_Rcpp_KernTest(SEXP RESISEXP, SEXP KKSEXP, SEXP nPERMSSEXP, SEXP iter1SEXP, SEXP iter2SEXP, SEXP verboseSEXP) {
+Rcpp::List Rcpp_KernTest(const arma::vec& RESI, const Rcpp::List& KK, const arma::uword& nPERMS, const arma::uword& iter1, const arma::uword& iter2, const int& ncores, const bool& verbose);
+RcppExport SEXP _ROKET_Rcpp_KernTest(SEXP RESISEXP, SEXP KKSEXP, SEXP nPERMSSEXP, SEXP iter1SEXP, SEXP iter2SEXP, SEXP ncoresSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -77,17 +66,17 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::uword& >::type nPERMS(nPERMSSEXP);
     Rcpp::traits::input_parameter< const arma::uword& >::type iter1(iter1SEXP);
     Rcpp::traits::input_parameter< const arma::uword& >::type iter2(iter2SEXP);
+    Rcpp::traits::input_parameter< const int& >::type ncores(ncoresSEXP);
     Rcpp::traits::input_parameter< const bool& >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(Rcpp_KernTest(RESI, KK, nPERMS, iter1, iter2, verbose));
+    rcpp_result_gen = Rcpp::wrap(Rcpp_KernTest(RESI, KK, nPERMS, iter1, iter2, ncores, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_ROKET_Rcpp_calc_rank", (DL_FUNC) &_ROKET_Rcpp_calc_rank, 1},
     {"_ROKET_Rcpp_run_OT", (DL_FUNC) &_ROKET_Rcpp_run_OT, 12},
     {"_ROKET_Rcpp_run_full_OT", (DL_FUNC) &_ROKET_Rcpp_run_full_OT, 12},
-    {"_ROKET_Rcpp_KernTest", (DL_FUNC) &_ROKET_Rcpp_KernTest, 6},
+    {"_ROKET_Rcpp_KernTest", (DL_FUNC) &_ROKET_Rcpp_KernTest, 7},
     {NULL, NULL, 0}
 };
 

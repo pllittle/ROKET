@@ -18,7 +18,6 @@ double Rcpp_logSumExp(const arma::vec& log_x){
 	}
 }
 
-// [[Rcpp::export]]
 arma::vec Rcpp_calc_rank(const arma::vec& aa){
 	arma::vec out = arma::zeros<arma::vec>(aa.n_elem);
 	out = arma::conv_to<arma::vec>::from(arma::sort_index(aa));
@@ -261,7 +260,7 @@ Rcpp::List Rcpp_run_full_OT(const arma::mat& COST,
 Rcpp::List Rcpp_KernTest(const arma::vec& RESI,
 	const Rcpp::List& KK,const arma::uword& nPERMS = 2e3,
 	const arma::uword& iter1 = 50,const arma::uword& iter2 = 1e3,
-	const bool& verbose = false){
+	const int& ncores = 1,const bool& verbose = false){
 	
 	arma::uword kk, pp, NN = RESI.n_elem,
 		nKK = KK.length();
@@ -269,6 +268,7 @@ Rcpp::List Rcpp_KernTest(const arma::vec& RESI,
 	arma::mat pRESI = arma::zeros<arma::mat>(nPERMS,NN),
 		pSTAT = arma::zeros<arma::mat>(nPERMS + 1,nKK);
 	arma::uvec tmp_vec = arma::zeros<arma::uvec>(nPERMS + 1);
+	bool verbose2 = verbose && ncores == 1;
 	
 	// Store KK as cube
 	arma::cube cKK = arma::zeros<arma::cube>(NN,NN,nKK);
@@ -289,13 +289,18 @@ Rcpp::List Rcpp_KernTest(const arma::vec& RESI,
 		pSTAT.at(0,kk) = arma::dot(RESI,cKK.slice(kk) * RESI);
 		
 		// Permuted test-statistics
-		for(pp = 0; pp < nPERMS; pp++){
-			if( verbose ){
-				if( (pp+1) % iter1 == 0 ) Rcpp::Rcout << ".";
-				if( (pp+1) % iter2 == 0 || (pp+1) == nPERMS )
-					Rcpp::Rcout << (pp+1) << " out of " << nPERMS << "\n";
+		#ifdef _OPENMP
+		# pragma omp parallel for schedule(dynamic) \
+			num_threads(ncores) \
+			shared(nPERMS,verbose2,iter1,iter2,pSTAT,kk,pRESI)
+		#endif
+		for(arma::uword pp2 = 0; pp2 < nPERMS; pp2++){
+			if( verbose2 ){
+				if( (pp2 + 1) % iter1 == 0 ) Rcpp::Rcout << ".";
+				if( (pp2 + 1) % iter2 == 0 || (pp2 + 1) == nPERMS )
+					Rcpp::Rcout << (pp2 + 1) << " out of " << nPERMS << "\n";
 			}
-			pSTAT.at(pp + 1,kk) = arma::dot(pRESI.row(pp) * cKK.slice(kk),pRESI.row(pp).t());
+			pSTAT.at(pp2 + 1,kk) = arma::dot(pRESI.row(pp2) * cKK.slice(kk),pRESI.row(pp2).t());
 		}
 		
 	}

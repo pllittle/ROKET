@@ -189,6 +189,7 @@ run_myOTs = function(ZZ,COST,EPS,LAMBDA1,LAMBDA2,
 # ----------
 
 #' @title kernTEST
+#' @inheritParams run_myOTs
 #' @param RESI A numeric vector of null model residuals
 #'	\code{names(RESI)} must be set to maintain sample ordering
 #' @param KK A list containing double-centered positive semi-definite
@@ -205,7 +206,7 @@ run_myOTs = function(ZZ,COST,EPS,LAMBDA1,LAMBDA2,
 #' @param verbose Boolean set to TRUE to display verbose progress output
 #' @export
 kernTEST = function(RESI,KK,nPERMS = 1e5,
-	iter1 = 50,iter2 = 1e3,verbose){
+	iter1 = 50,iter2 = 1e3,ncores = 1,verbose = TRUE){
 	
 	if( is.null(names(RESI)) )
 		stop("Specify names(RESI)")
@@ -221,7 +222,7 @@ kernTEST = function(RESI,KK,nPERMS = 1e5,
 	
 	out_test = Rcpp_KernTest(RESI = RESI,KK = KK,
 		nPERMS = nPERMS,iter1 = iter1,iter2 = iter2,
-		verbose = verbose)
+		ncores = ncores,verbose = verbose)
 	names(out_test$PVALs) = names(KK)
 	
 	return(out_test)
@@ -929,7 +930,7 @@ kOT_sim_KERN = function(sim,OT,nPERM,hBETAs = NULL){
 			
 			lm_out = lm(sim$OUT[[hBETA]]$YY ~ .,data = smart_df(XX))
 			RESI = as.numeric(lm_out$residuals)
-			fit2 = Rcpp_KernTest(RESI = RESI,KK = KK,nPERMS = nPERM,
+			fit2 = kernTEST(RESI = RESI,KK = KK,nPERMS = nPERM,
 				iter1 = 50,iter2 = 1000,verbose = FALSE); rm(RESI)
 			names(fit2$PVALs) = names(KK)
 			fit2
@@ -977,7 +978,7 @@ kOT_sim_KERN = function(sim,OT,nPERM,hBETAs = NULL){
 			
 				cout = coxph(Surv(SS,DD) ~ .,data = smart_df(XX))
 				RESI = as.numeric(cout$residuals)
-				fit2 = Rcpp_KernTest(RESI = RESI,KK = KK,nPERMS = nPERM,
+				fit2 = kernTEST(RESI = RESI,KK = KK,nPERMS = nPERM,
 					iter1 = 50,iter2 = 1000,verbose = FALSE); rm(RESI)
 				names(fit2$PVALs) = names(KK)
 				fit2

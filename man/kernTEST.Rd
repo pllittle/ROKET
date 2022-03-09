@@ -4,7 +4,15 @@
 \alias{kernTEST}
 \title{kernTEST}
 \usage{
-kernTEST(RESI, KK, nPERMS = 1e+05, iter1 = 50, iter2 = 1000, verbose)
+kernTEST(
+  RESI,
+  KK,
+  nPERMS = 1e+05,
+  iter1 = 50,
+  iter2 = 1000,
+  ncores = 1,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{RESI}{A numeric vector of null model residuals
@@ -24,6 +32,9 @@ permutation-based p-value calculation}
 
 \item{iter2}{A positive integer for displaying a newline for every
 'iter2' iterations through the loop's progress}
+
+\item{ncores}{A positive integer for the number of cores/threads
+to reduce computational runtime when running for loops}
 
 \item{verbose}{Boolean set to TRUE to display verbose progress output}
 }
