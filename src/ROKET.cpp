@@ -5,6 +5,9 @@
 #include <omp.h>
 #endif
 
+// --------------------
+// Minor functions
+// --------------------
 double Rcpp_logSumExp(const arma::vec& log_x){
 	if( log_x.n_elem == 1 ){
 		return log_x.at(0);
@@ -13,6 +16,29 @@ double Rcpp_logSumExp(const arma::vec& log_x){
 		arma::vec log_x_2 = log_x - max_val;
 		return std::log(arma::sum(arma::exp(log_x_2))) + max_val;
 	}
+}
+
+// [[Rcpp::export]]
+arma::vec Rcpp_calc_rank(const arma::vec& aa){
+	arma::vec out = arma::zeros<arma::vec>(aa.n_elem);
+	out = arma::conv_to<arma::vec>::from(arma::sort_index(aa));
+	out = arma::conv_to<arma::vec>::from(arma::sort_index(out)) + 1;
+	
+	// Check ties
+	arma::vec uniq_aa = arma::unique(aa);
+	if( uniq_aa.n_elem != aa.n_elem ){
+		arma::uword ii;
+		double tmp_avg;
+		for(ii = 0; ii < uniq_aa.n_elem; ii++){
+			arma::uvec idx = arma::find(aa == uniq_aa.at(ii));
+			if( idx.n_elem == 1 ) continue;
+			tmp_avg = arma::sum(out.elem(idx)) / idx.n_elem;
+			out.elem(idx).fill(tmp_avg);
+		}
+	}
+	
+	return out;
+	
 }
 
 
@@ -276,15 +302,14 @@ Rcpp::List Rcpp_KernTest(const arma::vec& RESI,
 	
 	// Calculate p-values
 	for(kk = 0; kk < nKK; kk++){
-		// Permutation p-value per kernel
-		PVALs.at(kk) = arma::sum(pSTAT.col(kk) >= pSTAT.at(0,kk)) * 1.0 / (nPERMS + 1.0);
-		
 		// Transform statistics to empirical distribution b/c kernels can be on different scales
-		tmp_vec = arma::sort_index(arma::sort_index(pSTAT.col(kk)));
-		pSTAT.col(kk) = 1.0 - arma::conv_to<arma::vec>::from(tmp_vec) / (nPERMS + 1.0);
+		pSTAT.col(kk) = 1.0 - ( Rcpp_calc_rank(pSTAT.col(kk)) - 1.0 ) / (nPERMS + 1.0);
+		
+		// Permutation p-value per kernel
+		PVALs.at(kk) = pSTAT.at(0,kk);
 	}
 	
-	// Calculate ominibus p-value
+	// Calculate omnibus p-value
 	double omni_PVAL = arma::sum(arma::min(pSTAT,1) 
 		<= arma::min(pSTAT.row(0).t())) * 1.0 / (nPERMS + 1.0);
 	
@@ -293,10 +318,6 @@ Rcpp::List Rcpp_KernTest(const arma::vec& RESI,
 		Rcpp::Named("omni_PVAL",omni_PVAL));
 	
 }
-
-
-
-
 
 
 

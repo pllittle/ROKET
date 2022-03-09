@@ -1349,7 +1349,7 @@ NULL
 # Sys.setenv("RSTUDIO_PANDOC" = "C:/Program Files/RStudio/bin/pandoc")
 # check_pandoc = rmarkdown::pandoc_available(); check_pandoc
 #### usethis::use_vignette(name = "test",title = "Testing")
-# make_vign = TRUE
+# make_vign = check_pandoc && TRUE; make_vign
 # devtools::check(pkg = pack_dir,manual = TRUE,cran = FALSE,error_on = c("warning","note")[1],vignettes = make_vign)
 # devtools::install(pack_dir,build_vignettes = make_vign)
 
