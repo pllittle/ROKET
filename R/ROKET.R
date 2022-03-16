@@ -52,14 +52,14 @@ setdirs = function(work_dir){
 #'	algorithmic convergence. The default value is \code{1e-5}.
 #' @param max_iter A positive integer denoting the maximum
 #'	iterations to run the algorithm.
-#' @param show Boolean value to display verbose algorithm output.
+#' @param verbose Boolean value to display verbose function output.
 #' @param show_iter A positive integer to display iteration details
-#'	at multiples of \code{show_iter} but only if \code{show = TRUE}.
+#'	at multiples of \code{show_iter} but only if \code{verbose = TRUE}.
 #' 
 #' @export
 run_myOT = function(XX,YY,COST,EPS,LAMBDA1,LAMBDA2,
 	balance = FALSE,conv = 1e-5,max_iter = 3e3,
-	show = TRUE,show_iter = 50){
+	verbose = TRUE,show_iter = 50){
 	
 	nXX = names(XX)
 	nYY = names(YY)
@@ -88,7 +88,7 @@ run_myOT = function(XX,YY,COST,EPS,LAMBDA1,LAMBDA2,
 	OT = Rcpp_run_OT(XX = XX2,YY = YY2,COST_XY = COST_XY,
 		EPS = EPS,LAMBDA1 = LAMBDA1,LAMBDA2 = LAMBDA2,
 		balance = balance,highLAM_lowMU = TRUE,
-		conv = conv,max_iter = max_iter,show = show,
+		conv = conv,max_iter = max_iter,show = verbose,
 		show_iter = show_iter)
 	
 	# Add dimnames
@@ -109,6 +109,7 @@ run_myOT = function(XX,YY,COST,EPS,LAMBDA1,LAMBDA2,
 }
 
 #' @title run_myOTs
+#' @inheritParams run_myOT
 #' @param ZZ A numeric matrix of non-negative mass to transport.
 #'	Rows correspond to features (e.g. genes) and columns
 #'	correspond to samples or individuals. Each column must have
@@ -116,30 +117,14 @@ run_myOT = function(XX,YY,COST,EPS,LAMBDA1,LAMBDA2,
 #' @param COST A numeric square matrix of non-negative values
 #'	representing the non-negative costs to transport 
 #'	masses between pairs of features
-#' @param EPS A positive numeric value representing the
-#'	tuning parameter for entropic regularization.
-#' @param LAMBDA1 A non-negative numeric value representing
-#'	the tuning parameter penalizing the distance between \code{XX}
-#'	and the row sums of the optimal transport matrix.
-#' @param LAMBDA2 A non-negative numeric value representing
-#'	the tuning parameter penalizing the distance between \code{YY}
-#'	and the column sums of the optimal transport matrix.
-#' @param balance Boolean set to \code{TRUE} to run balanced
-#'	optimal transport regardless of LAMDA1 and LAMBDA2. 
-#'	Otherwise run unbalanced optimal transport.
-#' @param conv A positive numeric value to determine 
-#'	algorithmic convergence. The default value is \code{1e-5}.
-#' @param max_iter A positive integer denoting the maximum
-#'	iterations to run the algorithm.
 #' @param ncores A positive integer for the number of cores/threads
 #'	to reduce computational runtime when running for loops
-#' @param show Boolean value to display verbose algorithm output.
 #' @param show_iter A positive integer to display iteration details
-#'	at multiples of \code{show_iter} but only if \code{show = TRUE}.
+#'	at multiples of \code{show_iter} but only if \code{verbose = TRUE}.
 #' @export
 run_myOTs = function(ZZ,COST,EPS,LAMBDA1,LAMBDA2,
 	balance,conv = 1e-5,max_iter = 3e3,ncores = 1,
-	show = TRUE,show_iter = 50){
+	verbose = TRUE,show_iter = 50){
 	
 	# Check inputs
 	mass = apply(ZZ,2,function(xx){
@@ -171,7 +156,7 @@ run_myOTs = function(ZZ,COST,EPS,LAMBDA1,LAMBDA2,
 		EPS = EPS,LAMBDA1 = LAMBDA1,LAMBDA2 = LAMBDA2,
 		balance = balance,highLAM_lowMU = TRUE,
 		conv = conv,max_iter = max_iter,ncores = ncores,
-		show = show,show_iter = show_iter)
+		show = verbose,show_iter = show_iter)
 	
 	out_OT$DIST = smart_names(out_OT$DIST,
 		ROW = colnames(ZZ),COL = colnames(ZZ))
@@ -192,38 +177,53 @@ run_myOTs = function(ZZ,COST,EPS,LAMBDA1,LAMBDA2,
 #' @inheritParams run_myOTs
 #' @param RESI A numeric vector of null model residuals
 #'	\code{names(RESI)} must be set to maintain sample ordering
-#' @param KK A list containing double-centered positive semi-definite
+#' @param KK An array containing double-centered positive semi-definite
 #'	kernel matrices. Refer to \code{MiRKAT::D2K()} for transforming 
-#'	distance matrices to kernel matrices. The \code{colnames()} and 
-#'	\code{rownames()} per kernel matrix must match \code{names(RESI)}.
-#'	Also set names(KK) to keep track of each kernel matrix.
+#'	distance matrices to kernel matrices. The \code{dimnames(KK)[[1]]} and 
+#'	\code{dimnames(KK)[[2]]} must match \code{names(RESI)}.
+#'	Also set dimnames(KK)[[3]] to keep track of each kernel matrix.
+#' @param OMNI A matrix of zeros and ones. Each column corresponds to a
+#'	distance matrix while each row corresponds to an omnibus test. Set
+#'	\code{rownames(OMNI)} for labeling outputted p-values and 
+#'	\code{colnames(OMNI)} which should match \code{dimnames(KK)[[3]]}.
 #' @param nPERMS A positive integer to specify the number of
 #'	permutation-based p-value calculation
 #' @param iter1 A positive integer for displaying a dot for every
 #'	'iter1' iterations through the loop's progress
 #' @param iter2 A positive integer for displaying a newline for every
 #'	'iter2' iterations through the loop's progress
-#' @param verbose Boolean set to TRUE to display verbose progress output
 #' @export
-kernTEST = function(RESI,KK,nPERMS = 1e5,
+kernTEST = function(RESI,KK,OMNI,nPERMS = 1e5,
 	iter1 = 50,iter2 = 1e3,ncores = 1,verbose = TRUE){
 	
-	if( is.null(names(RESI)) )
-		stop("Specify names(RESI)")
-	if( is.null(names(KK)) )
-		stop("Specify names(KK) to track kernel matrices")
 	samp_names = names(RESI)
-	for(kk in names(KK)){
-		if( !all(samp_names == rownames(KK[[kk]])) )
-			stop(sprintf("Sample row mismatch in KK[[%s]]",kk))
-		if( !all(samp_names == colnames(KK[[kk]])) )
-			stop(sprintf("Sample col mismatch in KK[[%s]]",kk))
-	}
 	
-	out_test = Rcpp_KernTest(RESI = RESI,KK = KK,
-		nPERMS = nPERMS,iter1 = iter1,iter2 = iter2,
-		ncores = ncores,verbose = verbose)
-	names(out_test$PVALs) = names(KK)
+	if( is.null(samp_names) )
+		stop("Specify names(RESI)")
+	if( is.null(dimnames(KK)[[3]]) || is.null(dimnames(KK)[[1]]) 
+		|| is.null(dimnames(KK)[[2]]) )
+		stop("Specify dimnames(KK) to track sample order and kernel matrices")
+	
+	if( !all(samp_names == dimnames(KK[[1]])) )
+		stop("names(RESI) != dimnames(KK[[1]]")
+	if( !all(samp_names == dimnames(KK[[2]])) )
+		stop("names(RESI) != dimnames(KK[[2]]")
+	
+	# Check OMNI object
+	if( !all(colnames(OMNI) == dimnames(KK)[[3]]) )
+		stop("colnames(OMNI) != dimnames(KK[[3]]")
+	if( is.null(rownames(OMNI)) )
+		stop("Specify rownames(OMNI)")
+	if( !all(c(OMNI) %in% c(0,1)) )
+		stop("OMNI should take values 0 or 1")
+	if( any(rowSums(OMNI) == 0) )
+		stop("Each row of OMNI should contain at least one non-zero element")
+	
+	out_test = Rcpp_KernTest(RESI = RESI,cKK = KK,
+		OMNI = OMNI,nPERMS = nPERMS,iter1 = iter1,
+		iter2 = iter2,ncores = ncores,verbose = verbose)
+	names(out_test$PVALs) = dimnames(KK)[[3]]
+	names(out_test$omni_PVALs) = rownames(OMNI)
 	
 	return(out_test)
 }
@@ -737,7 +737,7 @@ kOT_sim_OT = function(work_dir,NN,nGENE,nPATH,SCEN,ncores = 1){
 				out = run_myOTs(ZZ = sMUT,COST = COST,EPS = EPS,
 					LAMBDA1 = LAM2,LAMBDA2 = LAM2,balance = BAL,
 					conv = conv,max_iter = max_iter,ncores = ncores,
-					show = FALSE,show_iter = show_iter)
+					verbose = FALSE,show_iter = show_iter)
 				
 				saveRDS(out,tmp_OT_fn)
 				
@@ -876,7 +876,7 @@ kOT_sim_GENE = function(sim,out = "OLS",hBETAs = NULL,nPERM,samp_thres){
 kOT_sim_KERN = function(sim,OT,nPERM,hBETAs = NULL){
 	
 	OT_EUC = OT
-	OT_EUC$EUC = as.matrix(dist(t(sim$sMUT)))
+	EUC = as.matrix(dist(t(sim$sMUT)))
 	all_out = c("OLS","SURV")
 	all_LABS = c("EUC","OT")
 	
@@ -887,67 +887,87 @@ kOT_sim_KERN = function(sim,OT,nPERM,hBETAs = NULL){
 	# Set null model covariates
 	log10_TMB = log10(colSums(sim$sMUT))
 	XX = cbind(sim$XX[,-1],log10_TMB)
+	NN = nrow(XX)
+	
+	KK = array(data = NA,dim = c(NN,NN,length(OT_EUC) + 1))
+	samp_names = sprintf("S%s",seq(NN))
+	dist_names = c("EUC",names(OT_EUC))
+	dimnames(KK) = list(samp_names,samp_names,dist_names)
+	for(vv in dist_names){
+		if( vv == "EUC" ){
+			dd = EUC
+		} else {
+			dd = OT_EUC[[vv]]$DIST
+		}
+		KK[,,vv] = D2K(D = dd)
+		rm(dd)
+	}
+	
+	OMNI = matrix(0,nrow = 2,ncol = dim(KK)[3],
+		dimnames = list(all_LABS,dimnames(KK)[[3]]))
+	OMNI[1,1] = 1; OMNI[2,-1] = 1
 	
 	reg_out = c()
 	for(out in all_out){
 	for(hBETA in hBETAs){
-	for(LAB in all_LABS){
-		cat(sprintf("%s: OUT = %s; hBETA = %s; LAB = %s ...\n",
-			date(),out,hBETA,LAB))
+		cat(sprintf("%s: OUT = %s; hBETA = %s ...\n",date(),out,hBETA))
 		hBETA_2 = as.numeric(gsub("hBETA_","",hBETA))
 		
-		# Make Kernel list
-		KK = list()
-		if( LAB == "EUC" ){
-			dd = OT_EUC$EUC
-			KK$EUC = D2K(D = dd)
-		} else {
-			for(vv in names(OT)){
-				dd = OT[[vv]]$DIST
-				KK[[vv]] = D2K(D = dd)
-			}
-		}
-		rm(dd)
-		
-		# Run regression
 		if( out == "OLS" ){
-			fit = MiRKAT(y = sim$OUT[[hBETA]]$YY,X = XX,
-				Ks = KK,out_type = "C",method = "permutation",
-				omnibus = "permutation",nperm = nPERM,
-				returnKRV = FALSE,returnR2 = FALSE)
-			fit
 			
-			if( LAB == "EUC" ){
-				reg_out = rbind(reg_out,smart_df(OUT = out,hBETA = hBETA_2,
-					SOFT = "MiRKAT",LAB = LAB,PVAL_perm = as.numeric(fit$p_values)))
-			} else {
-				reg_out = rbind(reg_out,smart_df(OUT = out,hBETA = hBETA_2,
-					SOFT = "MiRKAT",LAB = "omni_OT",PVAL_perm = fit$omnibus_p))
-				reg_out = rbind(reg_out,smart_df(OUT = out,hBETA = hBETA_2,
-					SOFT = "MiRKAT",LAB = names(fit$p_values),
-					PVAL_perm = as.numeric(fit$p_values)))
+			# Run OLS regression with MiRKAT
+			for(LAB in all_LABS){
+				KK_tmp = list()
+				tmp_LABS = dimnames(KK)[[3]]
+				if( LAB == "EUC" ) 	tmp_LABS = tmp_LABS[grepl("EUC",tmp_LABS)]
+				if( LAB == "OT" ) 	tmp_LABS = tmp_LABS[!grepl("EUC",tmp_LABS)]
+				for(vv in tmp_LABS){
+					KK_tmp[[vv]] = KK[,,vv]
+				}
+				
+				fit = MiRKAT(y = sim$OUT[[hBETA]]$YY,X = XX,
+					Ks = KK_tmp,out_type = "C",method = "permutation",
+					omnibus = "permutation",nperm = nPERM,
+					returnKRV = FALSE,returnR2 = FALSE)
+				fit
+				
+				if( LAB == "EUC" ){
+					reg_out = rbind(reg_out,smart_df(OUT = out,hBETA = hBETA_2,
+						SOFT = "MiRKAT",LAB = LAB,PVAL_perm = as.numeric(fit$p_values)))
+				} else {
+					reg_out = rbind(reg_out,smart_df(OUT = out,hBETA = hBETA_2,
+						SOFT = "MiRKAT",LAB = "omni_OT",PVAL_perm = fit$omnibus_p))
+					reg_out = rbind(reg_out,smart_df(OUT = out,hBETA = hBETA_2,
+						SOFT = "MiRKAT",LAB = names(fit$p_values),
+						PVAL_perm = as.numeric(fit$p_values)))
+				}
 			}
 			
+			# Run OLS regression with ROKET
 			lm_out = lm(sim$OUT[[hBETA]]$YY ~ .,data = smart_df(XX))
 			RESI = as.numeric(lm_out$residuals)
-			fit2 = kernTEST(RESI = RESI,KK = KK,nPERMS = nPERM,
+			names(RESI) = samp_names
+			
+			fit2 = kernTEST(RESI = RESI,KK = KK,OMNI = OMNI,nPERMS = nPERM,
 				iter1 = 50,iter2 = 1000,verbose = FALSE); rm(RESI)
-			names(fit2$PVALs) = names(KK)
 			fit2
 			
-			if( LAB == "EUC" ){
-				reg_out = rbind(reg_out,smart_df(OUT = out,hBETA = hBETA_2,
-					SOFT = "Rcpp",LAB = LAB,PVAL_perm = as.numeric(fit2$PVALs)))
-			} else {
-				reg_out = rbind(reg_out,smart_df(OUT = out,hBETA = hBETA_2,
-					SOFT = "Rcpp",LAB = "omni_OT",PVAL_perm = fit2$omni_PVAL))
-				reg_out = rbind(reg_out,smart_df(OUT = out,hBETA = hBETA_2,
-					SOFT = "Rcpp",LAB = names(fit2$PVALs),
-					PVAL_perm = as.numeric(fit2$PVALs)))
-			}
+			reg_out = rbind(reg_out,smart_df(OUT = out,hBETA = hBETA_2,
+				SOFT = "Rcpp",LAB = "EUC",
+				PVAL_perm = as.numeric(fit2$omni_PVALs["EUC"])))
+			
+			reg_out = rbind(reg_out,smart_df(OUT = out,hBETA = hBETA_2,
+				SOFT = "Rcpp",LAB = "omni_OT",
+				PVAL_perm = as.numeric(fit2$omni_PVALs["OT"])))
+			
+			reg_out = rbind(reg_out,smart_df(OUT = out,hBETA = hBETA_2,
+				SOFT = "Rcpp",LAB = names(fit2$PVALs),
+				PVAL_perm = as.numeric(fit2$PVALs)))
 			
 		}
+		
 		if( out == "SURV" ){
+			
 			OUTs = names(sim$OUT[[hBETA]])
 			OUTs = OUTs[grepl("SS_",OUTs)]
 			OUTs = gsub("SS_","",OUTs)
@@ -961,44 +981,63 @@ kOT_sim_KERN = function(sim,OT,nPERM,hBETAs = NULL){
 				SS = tmp_surv[,paste0("SS_",OUT)]
 				DD = tmp_surv[,paste0("DD_",OUT)]
 				
-				fit = suppressWarnings(MiRKATS(obstime = SS,delta = DD,X = XX,
-					Ks = KK,perm = TRUE,omnibus = "permutation",nperm = nPERM))
-				fit
-				
-				if( LAB == "EUC" ){
-					reg_out = rbind(reg_out,smart_df(OUT = OUT2,hBETA = hBETA_2,
-						SOFT = "MiRKAT",LAB = LAB,PVAL_perm = as.numeric(fit$p_values)))
-				} else {
-					reg_out = rbind(reg_out,smart_df(OUT = OUT2,hBETA = hBETA_2,
-						SOFT = "MiRKAT",LAB = "omni_OT",PVAL_perm = fit$omnibus_p))
-					reg_out = rbind(reg_out,smart_df(OUT = OUT2,hBETA = hBETA_2,
-						SOFT = "MiRKAT",LAB = names(fit$p_values),
-						PVAL_perm = as.numeric(fit$p_values)))
+				# Run SURV regression with MiRKATS
+				for(LAB in all_LABS){
+					KK_tmp = list()
+					tmp_LABS = dimnames(KK)[[3]]
+					if( LAB == "EUC" ) 	tmp_LABS = tmp_LABS[grepl("EUC",tmp_LABS)]
+					if( LAB == "OT" ) 	tmp_LABS = tmp_LABS[!grepl("EUC",tmp_LABS)]
+					for(vv in tmp_LABS){
+						KK_tmp[[vv]] = KK[,,vv]
+					}
+					
+					fit = suppressWarnings(MiRKATS(obstime = SS,delta = DD,X = XX,
+						Ks = KK_tmp,perm = TRUE,omnibus = "permutation",nperm = nPERM))
+					fit
+					
+					if( LAB == "EUC" ){
+						reg_out = rbind(reg_out,smart_df(OUT = OUT2,hBETA = hBETA_2,
+							SOFT = "MiRKAT",LAB = LAB,
+							PVAL_perm = as.numeric(fit$p_values)))
+					} else {
+						reg_out = rbind(reg_out,smart_df(OUT = OUT2,hBETA = hBETA_2,
+							SOFT = "MiRKAT",LAB = "omni_OT",
+							PVAL_perm = fit$omnibus_p))
+						reg_out = rbind(reg_out,smart_df(OUT = OUT2,hBETA = hBETA_2,
+							SOFT = "MiRKAT",LAB = names(fit$p_values),
+							PVAL_perm = as.numeric(fit$p_values)))
+					}
+					
 				}
-			
+				
+				# Run SURV regression with ROKET
 				cout = coxph(Surv(SS,DD) ~ .,data = smart_df(XX))
 				RESI = as.numeric(cout$residuals)
-				fit2 = kernTEST(RESI = RESI,KK = KK,nPERMS = nPERM,
-					iter1 = 50,iter2 = 1000,verbose = FALSE); rm(RESI)
+				names(RESI) = samp_names
+				
+				fit2 = kernTEST(RESI = RESI,KK = KK,OMNI = OMNI,
+					nPERMS = nPERM,iter1 = 50,iter2 = 1000,
+					verbose = FALSE); rm(RESI)
 				names(fit2$PVALs) = names(KK)
 				fit2
 				
-				if( LAB == "EUC" ){
-					reg_out = rbind(reg_out,smart_df(OUT = OUT2,hBETA = hBETA_2,
-						SOFT = "Rcpp",LAB = LAB,PVAL_perm = as.numeric(fit2$PVALs)))
-				} else {
-					reg_out = rbind(reg_out,smart_df(OUT = OUT2,hBETA = hBETA_2,
-						SOFT = "Rcpp",LAB = "omni_OT",PVAL_perm = fit2$omni_PVAL))
-					reg_out = rbind(reg_out,smart_df(OUT = OUT2,hBETA = hBETA_2,
-						SOFT = "Rcpp",LAB = names(fit2$PVALs),
-						PVAL_perm = as.numeric(fit2$PVALs)))
-				}
-			
+				reg_out = rbind(reg_out,smart_df(OUT = OUT2,hBETA = hBETA_2,
+					SOFT = "Rcpp",LAB = "EUC",
+					PVAL_perm = as.numeric(fit2$omni_PVALs["EUC"])))
+				
+				reg_out = rbind(reg_out,smart_df(OUT = OUT2,hBETA = hBETA_2,
+					SOFT = "Rcpp",LAB = "omni_OT",
+					PVAL_perm = as.numeric(fit2$omni_PVALs["OT"])))
+				
+				reg_out = rbind(reg_out,smart_df(OUT = OUT2,hBETA = hBETA_2,
+					SOFT = "Rcpp",LAB = names(fit2$PVALs)[-1],
+					PVAL_perm = as.numeric(fit2$PVALs[-1])))
+				
 			}
 			
 		}
 		
-	}}}
+	}}
 	print(reg_out)
 	
 	return(reg_out)

@@ -56,19 +56,20 @@ BEGIN_RCPP
 END_RCPP
 }
 // Rcpp_KernTest
-Rcpp::List Rcpp_KernTest(const arma::vec& RESI, const Rcpp::List& KK, const arma::uword& nPERMS, const arma::uword& iter1, const arma::uword& iter2, const int& ncores, const bool& verbose);
-RcppExport SEXP _ROKET_Rcpp_KernTest(SEXP RESISEXP, SEXP KKSEXP, SEXP nPERMSSEXP, SEXP iter1SEXP, SEXP iter2SEXP, SEXP ncoresSEXP, SEXP verboseSEXP) {
+Rcpp::List Rcpp_KernTest(const arma::vec& RESI, const arma::cube& cKK, const arma::umat& OMNI, const arma::uword& nPERMS, const arma::uword& iter1, const arma::uword& iter2, const int& ncores, const bool& verbose);
+RcppExport SEXP _ROKET_Rcpp_KernTest(SEXP RESISEXP, SEXP cKKSEXP, SEXP OMNISEXP, SEXP nPERMSSEXP, SEXP iter1SEXP, SEXP iter2SEXP, SEXP ncoresSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::vec& >::type RESI(RESISEXP);
-    Rcpp::traits::input_parameter< const Rcpp::List& >::type KK(KKSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type cKK(cKKSEXP);
+    Rcpp::traits::input_parameter< const arma::umat& >::type OMNI(OMNISEXP);
     Rcpp::traits::input_parameter< const arma::uword& >::type nPERMS(nPERMSSEXP);
     Rcpp::traits::input_parameter< const arma::uword& >::type iter1(iter1SEXP);
     Rcpp::traits::input_parameter< const arma::uword& >::type iter2(iter2SEXP);
     Rcpp::traits::input_parameter< const int& >::type ncores(ncoresSEXP);
     Rcpp::traits::input_parameter< const bool& >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(Rcpp_KernTest(RESI, KK, nPERMS, iter1, iter2, ncores, verbose));
+    rcpp_result_gen = Rcpp::wrap(Rcpp_KernTest(RESI, cKK, OMNI, nPERMS, iter1, iter2, ncores, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -76,7 +77,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_ROKET_Rcpp_run_OT", (DL_FUNC) &_ROKET_Rcpp_run_OT, 12},
     {"_ROKET_Rcpp_run_full_OT", (DL_FUNC) &_ROKET_Rcpp_run_full_OT, 12},
-    {"_ROKET_Rcpp_KernTest", (DL_FUNC) &_ROKET_Rcpp_KernTest, 7},
+    {"_ROKET_Rcpp_KernTest", (DL_FUNC) &_ROKET_Rcpp_KernTest, 8},
     {NULL, NULL, 0}
 };
 

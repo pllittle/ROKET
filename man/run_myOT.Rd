@@ -14,7 +14,7 @@ run_myOT(
   balance = FALSE,
   conv = 1e-05,
   max_iter = 3000,
-  show = TRUE,
+  verbose = TRUE,
   show_iter = 50
 )
 }
@@ -51,10 +51,10 @@ algorithmic convergence. The default value is \code{1e-5}.}
 \item{max_iter}{A positive integer denoting the maximum
 iterations to run the algorithm.}
 
-\item{show}{Boolean value to display verbose algorithm output.}
+\item{verbose}{Boolean value to display verbose function output.}
 
 \item{show_iter}{A positive integer to display iteration details
-at multiples of \code{show_iter} but only if \code{show = TRUE}.}
+at multiples of \code{show_iter} but only if \code{verbose = TRUE}.}
 }
 \description{
 Runs balanced or unbalanced optimal transport

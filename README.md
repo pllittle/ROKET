@@ -8,22 +8,24 @@ This package is designed to perform optimal transport and hypothesis testing on 
 
 ```R
 # Dependencies
-req_packs = c("devtools","Rcpp",
-	"RcppArmadillo","MiRKAT","ggplot2")
+req_packs = c("devtools","Rcpp","RcppArmadillo",
+	"smartr","MiRKAT","ggplot2","ROKET")
 all_packs = as.character(installed.packages()[,1])
 
 for(pack in req_packs){
-	if( pack %in% all_packs ) next
+	if( pack %in% all_packs ){
+		library(package = pack,character.only = TRUE)
+		next
+	}
 	stop(sprintf("Install R package = %s",pack))
+
+	if( pack %in% c("smartr","ROKET") ){
+		repo = sprintf("pllittle/%s",pack)
+		devtools::install_github(repo = repo,
+			build_vignettes = TRUE)
+	}
+
 }
-
-# Other dependencies
-if( !("smartr" %in% all_packs) )
-	devtools::install_github("pllittle/smartr")
-
-# Install
-if( !("ROKET" %in% all_packs) )
-	devtools::install_github("pllittle/ROKET")
 ```
 
 By default, the software runs a single thread and loops through all pairs of samples for distance calculations. However if OpenMP is installed, the user can make use of multi-threaded calculations.

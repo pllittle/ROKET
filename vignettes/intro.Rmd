@@ -49,11 +49,11 @@ Assuming all software dependencies and **ROKET** installation are installed, we 
 
 ```{r setup,warning = FALSE}
 # Load libraries
-library(ROKET)
-library(ggplot2)
-library(reshape2)
-library(smartr)
-library(ggdendro)
+req_packs = c("devtools","smartr","ggplot2","reshape2",
+  "survival","ggdendro","MiRKAT","ROKET")
+for(pack in req_packs){
+  library(package = pack,character.only = TRUE)
+}
 
 # List package's exported functions
 ls("package:ROKET")
@@ -314,7 +314,7 @@ jj = 2
 ZZ[c(ii,jj),colSums(ZZ[c(ii,jj),]) > 0]
 outOT = run_myOT(XX = ZZ[ii,],YY = ZZ[jj,],
   COST = 1 - GS,EPS = 1e-3,LAMBDA1 = 1,
-  LAMBDA2 = 1,balance = TRUE,show = FALSE)
+  LAMBDA2 = 1,balance = TRUE,verbose = FALSE)
 # str(outOT)
 
 # Optimal transport matrix
@@ -336,7 +336,7 @@ ZZ[c(ii,jj),colSums(ZZ[c(ii,jj),]) > 0]
 LAM = 0.5
 outOT = run_myOT(XX = ZZ[ii,],YY = ZZ[jj,],
   COST = 1 - GS,EPS = 1e-3,LAMBDA1 = LAM,
-  LAMBDA2 = LAM,balance = FALSE,show = FALSE)
+  LAMBDA2 = LAM,balance = FALSE,verbose = FALSE)
 # str(outOT)
 
 # Optimal transport matrix
@@ -360,7 +360,7 @@ outOT$DIST_1
 outOTs = run_myOTs(ZZ = t(ZZ),COST = 1 - GS,
   EPS = 1e-3,balance = TRUE,LAMBDA1 = 1,
   LAMBDA2 = 1,conv = 1e-5,max_iter = 3e3,
-  ncores = 1,show = FALSE)
+  ncores = 1,verbose = FALSE)
 # outOTs$DIST[1:5,1:5]
 
 hout = hclust(as.dist(outOTs$DIST))
@@ -384,7 +384,7 @@ for(LAM in LAMs){
   outOTs = run_myOTs(ZZ = t(ZZ),COST = 1 - GS,
     EPS = 1e-3,balance = BAL,LAMBDA1 = LAM2,
     LAMBDA2 = LAM2,conv = 1e-5,max_iter = 3e3,
-    ncores = 1,show = FALSE)
+    ncores = 1,verbose = FALSE)
   
   hout = hclust(as.dist(outOTs$DIST))
   ord = hout$labels[hout$order]
@@ -473,8 +473,6 @@ Since $\tilde{\bf{K}}$ is not guaranteed to be positive semi-definite, we perfor
 For a single candidate distance matrix, transform the distance matrix to a kernel matrix and convert the object into a list, denoted by the object `KK`, code is provided below from the R package, [**MiRKAT**](https://cran.r-project.org/web/packages/MiRKAT/index.html) [@zhao2015testing;@plantinga2017mirkat].
 
 ```{r eval = FALSE}
-library(MiRKAT)
-
 # For example, with Euclidean distance
 KK = MiRKAT::D2K(D = DD[,,"EUC"])
 KK = list(EUC = KK)
@@ -510,7 +508,6 @@ out_LOG = glm(Y ~ .,data = data.frame(X),family = "binomial")
 RESI = residuals(out_LOG)
 
 # Survival
-library(survival)
 out_CX = coxph(Surv(TIME,CENS) ~ .,data = data.frame(X))
 RESI = residuals(out_CX)
 ```
@@ -521,14 +518,32 @@ With one or multiple candidate kernels, **ROKET** will take
 * the residual vector (`RESI`), and 
 * user-supplied number of permutations (`nPERMS`) 
 
-to calculate individual kernel p-values as well as the omnibus test. The omnibus test assesses the significance of the minimum p-value kernel. The function `kernTEST` requires `names(RESI)` and dimension names per object as well as row/column names per kernel within `KK` are named for sample order consistency. Sample code is provided below. Setting `verbose = TRUE` allows the user to track the permutation's progress, especially when requesting hundreds of thousands of permutations.
+to calculate individual kernel p-values as well as omnibus tests. An omnibus test assesses the significance of the minimum p-value kernel among kernels considered. The function `kernTEST` requires `names(RESI)` and dimension names per object as well as row/column names per kernel within `KK` are named for sample order consistency. Sample code is provided below. Setting `verbose = TRUE` allows the user to track the permutation's progress, especially when requesting hundreds of thousands of permutations.
 
 ```{r eval = FALSE}
 nPERMS = 1e5
+nKK = length(KK)
 
+# Array of kernels
+aKK = array(data = NA,dim = dim(DD),
+  dimnames = dimnames(DD))
+for(nm in dimnames(DD)[[3]]){
+  aKK[,,nm] = KK[[nm]]
+}
+
+# Create OMNI matrix
+OMNI = matrix(0,nrow = 2,ncol = dim(aKK)[3],
+  dimnames = list(c("EUC","OT"),dimnames(aKK)[[3]]))
+OMNI["EUC","EUC"] = 1
+OMNI["OT",grepl("^OT",colnames(OMNI))] = 1
+OMNI
+
+# Hypothesis Testing
 ROKET::kernTEST(RESI = RESI,
-  KK = KK,nPERMS = nPERMS,
-  verbose = TRUE)
+  KK = aKK,
+  OMNI = OMNI,
+  nPERMS = nPERMS,
+  ncores = 1)
 ```
 
 The final output contains individual kernel p-values and the omnibus p-value. 

@@ -14,7 +14,7 @@ run_myOTs(
   conv = 1e-05,
   max_iter = 3000,
   ncores = 1,
-  show = TRUE,
+  verbose = TRUE,
   show_iter = 50
 )
 }
@@ -52,10 +52,10 @@ iterations to run the algorithm.}
 \item{ncores}{A positive integer for the number of cores/threads
 to reduce computational runtime when running for loops}
 
-\item{show}{Boolean value to display verbose algorithm output.}
+\item{verbose}{Boolean value to display verbose function output.}
 
 \item{show_iter}{A positive integer to display iteration details
-at multiples of \code{show_iter} but only if \code{show = TRUE}.}
+at multiples of \code{show_iter} but only if \code{verbose = TRUE}.}
 }
 \description{
 run_myOTs
