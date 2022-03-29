@@ -1,4 +1,5 @@
 // [[Rcpp::depends(RcppArmadillo)]]
+// #define ARMA_64BIT_WORD 1
 #include <RcppArmadillo.h>
 
 #ifdef _OPENMP
@@ -265,8 +266,7 @@ Rcpp::List Rcpp_KernTest(const arma::vec& RESI,
 		oo, nKK = cKK.n_slices;
 	arma::vec PVALs = arma::zeros<arma::vec>(nKK);
 	arma::mat pRESI = arma::zeros<arma::mat>(nPERMS,NN),
-		pSTAT = arma::zeros<arma::mat>(nPERMS + 1,nKK),
-		tmp_mat = arma::zeros<arma::mat>(nPERMS,nPERMS);
+		pSTAT = arma::zeros<arma::mat>(nPERMS + 1,nKK);
 	arma::uvec tmp_vec = arma::zeros<arma::uvec>(nPERMS + 1);
 	
 	// Store permuted residuals
@@ -281,8 +281,8 @@ Rcpp::List Rcpp_KernTest(const arma::vec& RESI,
 		pSTAT.at(0,kk) = arma::dot(RESI,cKK.slice(kk) * RESI);
 		
 		// Calculate permuted test-statistics
-		tmp_mat = pRESI * cKK.slice(kk) * pRESI.t();
-		pSTAT(arma::span(1,nPERMS),kk) = tmp_mat.diag();
+		pSTAT(arma::span(1,nPERMS),kk) = 
+			arma::diagvec(pRESI * cKK.slice(kk) * pRESI.t());
 		
 		// Transform statistics to empirical distribution 
 		//	b/c kernels can be on different scales
