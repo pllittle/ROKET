@@ -4,16 +4,7 @@
 \alias{kernTEST}
 \title{kernTEST}
 \usage{
-kernTEST(
-  RESI,
-  KK,
-  OMNI,
-  nPERMS = 1e+05,
-  iter1 = 50,
-  iter2 = 1000,
-  ncores = 1,
-  verbose = TRUE
-)
+kernTEST(RESI, KK, OMNI, nPERMS = 1e+05)
 }
 \arguments{
 \item{RESI}{A numeric vector of null model residuals
@@ -32,17 +23,6 @@ distance matrix while each row corresponds to an omnibus test. Set
 
 \item{nPERMS}{A positive integer to specify the number of
 permutation-based p-value calculation}
-
-\item{iter1}{A positive integer for displaying a dot for every
-'iter1' iterations through the loop's progress}
-
-\item{iter2}{A positive integer for displaying a newline for every
-'iter2' iterations through the loop's progress}
-
-\item{ncores}{A positive integer for the number of cores/threads
-to reduce computational runtime when running for loops}
-
-\item{verbose}{Boolean value to display verbose function output.}
 }
 \description{
 kernTEST

@@ -9,7 +9,7 @@ Rcpp_run_full_OT <- function(COST, ZZ, EPS, LAMBDA1, LAMBDA2, balance = FALSE, h
     .Call('_ROKET_Rcpp_run_full_OT', PACKAGE = 'ROKET', COST, ZZ, EPS, LAMBDA1, LAMBDA2, balance, highLAM_lowMU, conv, max_iter, ncores, show, show_iter)
 }
 
-Rcpp_KernTest <- function(RESI, cKK, OMNI, nPERMS = 2e3L, iter1 = 50L, iter2 = 1e3L, ncores = 1L, verbose = FALSE) {
-    .Call('_ROKET_Rcpp_KernTest', PACKAGE = 'ROKET', RESI, cKK, OMNI, nPERMS, iter1, iter2, ncores, verbose)
+Rcpp_KernTest <- function(RESI, cKK, OMNI, nPERMS = 2e3L) {
+    .Call('_ROKET_Rcpp_KernTest', PACKAGE = 'ROKET', RESI, cKK, OMNI, nPERMS)
 }
 

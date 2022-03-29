@@ -3,7 +3,7 @@ Type: Package
 Title: Associating Somatic Mutation with Clinical 
 				Outcomes through Kernel Regression and Optimal Transport
 Version: 1.0.0
-Date: 2021-11-24
+Date: 2022-03-29
 Author: Paul Little
 Maintainer: Paul Little <plittle@fredhutch.org>
 Description: Perform optimal transport on somatic point mutations 

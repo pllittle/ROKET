@@ -740,8 +740,8 @@ kOT_sim_KERN = function(sim,OT,nPERM,hBETAs = NULL){
 			RESI = as.numeric(lm_out$residuals)
 			names(RESI) = samp_names
 			
-			fit2 = kernTEST(RESI = RESI,KK = KK,OMNI = OMNI,nPERMS = nPERM,
-				iter1 = 50,iter2 = 1000,verbose = FALSE); rm(RESI)
+			fit2 = kernTEST(RESI = RESI,KK = KK,
+				OMNI = OMNI,nPERMS = nPERM); rm(RESI)
 			fit2
 			
 			reg_out = rbind(reg_out,smart_df(OUT = out,hBETA = hBETA_2,
@@ -807,9 +807,8 @@ kOT_sim_KERN = function(sim,OT,nPERM,hBETAs = NULL){
 				RESI = as.numeric(cout$residuals)
 				names(RESI) = samp_names
 				
-				fit2 = kernTEST(RESI = RESI,KK = KK,OMNI = OMNI,
-					nPERMS = nPERM,iter1 = 50,iter2 = 1000,
-					verbose = FALSE); rm(RESI)
+				fit2 = kernTEST(RESI = RESI,KK = KK,
+					OMNI = OMNI,nPERMS = nPERM); rm(RESI)
 				names(fit2$PVALs) = names(KK)
 				fit2
 				

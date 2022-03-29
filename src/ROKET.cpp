@@ -259,17 +259,15 @@ Rcpp::List Rcpp_run_full_OT(const arma::mat& COST,
 // [[Rcpp::export(Rcpp_KernTest)]]
 Rcpp::List Rcpp_KernTest(const arma::vec& RESI,
 	const arma::cube& cKK,const arma::umat& OMNI,
-	const arma::uword& nPERMS = 2e3,
-	const arma::uword& iter1 = 50,const arma::uword& iter2 = 1e3,
-	const int& ncores = 1,const bool& verbose = false){
+	const arma::uword& nPERMS = 2e3){
 	
 	arma::uword kk, pp, NN = RESI.n_elem,
 		oo, nKK = cKK.n_slices;
 	arma::vec PVALs = arma::zeros<arma::vec>(nKK);
 	arma::mat pRESI = arma::zeros<arma::mat>(nPERMS,NN),
-		pSTAT = arma::zeros<arma::mat>(nPERMS + 1,nKK);
+		pSTAT = arma::zeros<arma::mat>(nPERMS + 1,nKK),
+		tmp_mat = arma::zeros<arma::mat>(nPERMS,nPERMS);
 	arma::uvec tmp_vec = arma::zeros<arma::uvec>(nPERMS + 1);
-	bool verbose2 = verbose && ncores == 1;
 	
 	// Store permuted residuals
 	for(pp = 0; pp < nPERMS; pp++){
@@ -277,34 +275,15 @@ Rcpp::List Rcpp_KernTest(const arma::vec& RESI,
 	}
 	
 	// Calculate test-statistics
-	#ifdef _OPENMP
-	# pragma omp parallel for schedule(dynamic) \
-		num_threads(ncores) \
-		shared(nPERMS,verbose2,iter1,iter2,\
-			pSTAT,cKK,nKK,RESI,pRESI)
-	#endif
-	for(arma::uword jk = 0; jk < nKK; jk++){
-		if( verbose2 ) Rcpp::Rcout << "kk = " << jk + 1 << ": ";
-		
-		// Unpermuted test-statistics
-		pSTAT.at(0,jk) = arma::dot(RESI,cKK.slice(jk) * RESI);
-		
-		// Permuted test-statistics
-		arma::uword pp2;
-		for(pp2 = 0; pp2 < nPERMS; pp2++){
-			if( verbose2 ){
-				if( (pp2 + 1) % iter1 == 0 ) Rcpp::Rcout << ".";
-				if( (pp2 + 1) % iter2 == 0 || (pp2 + 1) == nPERMS )
-					Rcpp::Rcout << (pp2 + 1) << " out of " << nPERMS << "\n";
-			}
-			pSTAT.at(pp2 + 1,jk) = arma::dot(pRESI.row(pp2) * 
-				cKK.slice(jk),pRESI.row(pp2).t());
-		}
-		
-	}
-	
-	// Calculate p-values
 	for(kk = 0; kk < nKK; kk++){
+		
+		// Calculate unpermuted test-statistics
+		pSTAT.at(0,kk) = arma::dot(RESI,cKK.slice(kk) * RESI);
+		
+		// Calculate permuted test-statistics
+		tmp_mat = pRESI * cKK.slice(kk) * pRESI.t();
+		pSTAT(arma::span(1,nPERMS),kk) = tmp_mat.diag();
+		
 		// Transform statistics to empirical distribution 
 		//	b/c kernels can be on different scales
 		pSTAT.col(kk) = 1.0 - ( Rcpp_calc_rank(pSTAT.col(kk)) 
@@ -312,6 +291,7 @@ Rcpp::List Rcpp_KernTest(const arma::vec& RESI,
 		
 		// Permutation p-value per kernel
 		PVALs.at(kk) = pSTAT.at(0,kk);
+		
 	}
 	
 	// Calculate omnibus p-values
@@ -322,17 +302,11 @@ Rcpp::List Rcpp_KernTest(const arma::vec& RESI,
 		arma::mat tmp_mat = pSTAT.cols(tmp_cols);
 		omni_PVALs.at(oo) = arma::sum( arma::min(tmp_mat,1) 
 			<= arma::min(tmp_mat.row(0).t()) ) * 1.0 / (nPERMS + 1.0);
-		
 	}
 	
-	/* OLD CODE
-	double omni_PVAL = arma::sum(arma::min(pSTAT,1) 
-		<= arma::min(pSTAT.row(0).t())) * 1.0 / (nPERMS + 1.0);
-	*/
 	return Rcpp::List::create(
 		Rcpp::Named("PVALs",
 			Rcpp::NumericVector(PVALs.begin(),PVALs.end())),
-		// Rcpp::Named("omni_PVAL",omni_PVAL)
 		Rcpp::Named("omni_PVALs",
 			Rcpp::NumericVector(omni_PVALs.begin(),omni_PVALs.end()))
 		);

@@ -166,13 +166,8 @@ run_myOTs = function(ZZ,COST,EPS,LAMBDA1,LAMBDA2,
 #'	\code{colnames(OMNI)} which should match \code{dimnames(KK)[[3]]}.
 #' @param nPERMS A positive integer to specify the number of
 #'	permutation-based p-value calculation
-#' @param iter1 A positive integer for displaying a dot for every
-#'	'iter1' iterations through the loop's progress
-#' @param iter2 A positive integer for displaying a newline for every
-#'	'iter2' iterations through the loop's progress
 #' @export
-kernTEST = function(RESI,KK,OMNI,nPERMS = 1e5,
-	iter1 = 50,iter2 = 1e3,ncores = 1,verbose = TRUE){
+kernTEST = function(RESI,KK,OMNI,nPERMS = 1e5){
 	
 	samp_names = names(RESI)
 	
@@ -198,12 +193,12 @@ kernTEST = function(RESI,KK,OMNI,nPERMS = 1e5,
 		stop("Each row of OMNI should contain at least one non-zero element")
 	
 	out_test = Rcpp_KernTest(RESI = RESI,cKK = KK,
-		OMNI = OMNI,nPERMS = nPERMS,iter1 = iter1,
-		iter2 = iter2,ncores = ncores,verbose = verbose)
+		OMNI = OMNI,nPERMS = nPERMS)
 	names(out_test$PVALs) = dimnames(KK)[[3]]
 	names(out_test$omni_PVALs) = rownames(OMNI)
 	
 	return(out_test)
+	
 }
 
 
