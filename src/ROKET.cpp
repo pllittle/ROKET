@@ -1,5 +1,4 @@
 // [[Rcpp::depends(RcppArmadillo)]]
-// #define ARMA_64BIT_WORD 1
 #include <RcppArmadillo.h>
 
 #ifdef _OPENMP
@@ -261,7 +260,6 @@ Rcpp::List Rcpp_run_full_OT(const arma::mat& COST,
 Rcpp::List Rcpp_KernTest(const arma::vec& RESI,
 	const arma::cube& cKK,const arma::umat& OMNI,
 	const arma::uword& nPERMS = 2e3,
-	const arma::uword& method = 1,
 	const int& ncores = 1){
 	
 	arma::uword pp, NN = RESI.n_elem,
@@ -280,7 +278,7 @@ Rcpp::List Rcpp_KernTest(const arma::vec& RESI,
 	#ifdef _OPENMP
 	# pragma omp parallel for schedule(dynamic) \
 		num_threads(ncores) \
-		shared(method,nPERMS,pSTAT,cKK,nKK,RESI,pRESI)
+		shared(nPERMS,pSTAT,cKK,nKK,RESI,pRESI)
 	#endif
 	for(arma::uword kk = 0; kk < nKK; kk++){
 		
@@ -288,25 +286,10 @@ Rcpp::List Rcpp_KernTest(const arma::vec& RESI,
 		pSTAT.at(0,kk) = arma::dot(RESI,cKK.slice(kk) * RESI);
 		
 		// Calculate permuted test-statistics
-		if( method == 1 ){
-			
-			arma::uword pp2;
-			for(pp2 = 0; pp2 < nPERMS; pp2++){
-				pSTAT.at(pp2 + 1,kk) = arma::dot(pRESI.row(pp2) * 
-					cKK.slice(kk),pRESI.row(pp2).t());
-			}
-			
-		} else {
-			
-			arma::uword aa = 0,bb = aa;
-			while( aa <= nPERMS - 1 ){
-				bb = aa + 100 - 1;
-				if( bb >= nPERMS - 1 ) bb = nPERMS - 1;
-				pSTAT(arma::span(aa + 1,bb + 1),kk) = arma::diagvec(pRESI.rows(aa,bb) 
-					* cKK.slice(kk) * pRESI.rows(aa,bb).t());
-				aa = bb + 1;
-			}
-			
+		arma::uword pp2;
+		for(pp2 = 0; pp2 < nPERMS; pp2++){
+			pSTAT.at(pp2 + 1,kk) = arma::dot(pRESI.row(pp2) * 
+				cKK.slice(kk),pRESI.row(pp2).t());
 		}
 		
 		// Transform statistics to empirical distribution 

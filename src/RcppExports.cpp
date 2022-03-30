@@ -56,8 +56,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // Rcpp_KernTest
-Rcpp::List Rcpp_KernTest(const arma::vec& RESI, const arma::cube& cKK, const arma::umat& OMNI, const arma::uword& nPERMS);
-RcppExport SEXP _ROKET_Rcpp_KernTest(SEXP RESISEXP, SEXP cKKSEXP, SEXP OMNISEXP, SEXP nPERMSSEXP) {
+Rcpp::List Rcpp_KernTest(const arma::vec& RESI, const arma::cube& cKK, const arma::umat& OMNI, const arma::uword& nPERMS, const int& ncores);
+RcppExport SEXP _ROKET_Rcpp_KernTest(SEXP RESISEXP, SEXP cKKSEXP, SEXP OMNISEXP, SEXP nPERMSSEXP, SEXP ncoresSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -65,7 +65,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::cube& >::type cKK(cKKSEXP);
     Rcpp::traits::input_parameter< const arma::umat& >::type OMNI(OMNISEXP);
     Rcpp::traits::input_parameter< const arma::uword& >::type nPERMS(nPERMSSEXP);
-    rcpp_result_gen = Rcpp::wrap(Rcpp_KernTest(RESI, cKK, OMNI, nPERMS));
+    Rcpp::traits::input_parameter< const int& >::type ncores(ncoresSEXP);
+    rcpp_result_gen = Rcpp::wrap(Rcpp_KernTest(RESI, cKK, OMNI, nPERMS, ncores));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -73,7 +74,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_ROKET_Rcpp_run_OT", (DL_FUNC) &_ROKET_Rcpp_run_OT, 12},
     {"_ROKET_Rcpp_run_full_OT", (DL_FUNC) &_ROKET_Rcpp_run_full_OT, 12},
-    {"_ROKET_Rcpp_KernTest", (DL_FUNC) &_ROKET_Rcpp_KernTest, 4},
+    {"_ROKET_Rcpp_KernTest", (DL_FUNC) &_ROKET_Rcpp_KernTest, 5},
     {NULL, NULL, 0}
 };
 

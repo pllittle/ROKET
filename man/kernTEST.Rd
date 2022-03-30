@@ -4,7 +4,7 @@
 \alias{kernTEST}
 \title{kernTEST}
 \usage{
-kernTEST(RESI, KK, OMNI, nPERMS = 1e+05)
+kernTEST(RESI, KK, OMNI, nPERMS = 1e+05, ncores = 1)
 }
 \arguments{
 \item{RESI}{A numeric vector of null model residuals
@@ -23,6 +23,9 @@ distance matrix while each row corresponds to an omnibus test. Set
 
 \item{nPERMS}{A positive integer to specify the number of
 permutation-based p-value calculation}
+
+\item{ncores}{A positive integer for the number of cores/threads
+to reduce computational runtime when running for loops}
 }
 \description{
 kernTEST
