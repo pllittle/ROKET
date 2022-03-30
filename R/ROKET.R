@@ -167,7 +167,7 @@ run_myOTs = function(ZZ,COST,EPS,LAMBDA1,LAMBDA2,
 #' @param nPERMS A positive integer to specify the number of
 #'	permutation-based p-value calculation
 #' @export
-kernTEST = function(RESI,KK,OMNI,nPERMS = 1e5){
+kernTEST = function(RESI,KK,OMNI,nPERMS = 1e5,ncores = 1){
 	
 	samp_names = names(RESI)
 	
@@ -193,7 +193,7 @@ kernTEST = function(RESI,KK,OMNI,nPERMS = 1e5){
 		stop("Each row of OMNI should contain at least one non-zero element")
 	
 	out_test = Rcpp_KernTest(RESI = RESI,cKK = KK,
-		OMNI = OMNI,nPERMS = nPERMS)
+		OMNI = OMNI,nPERMS = nPERMS,ncores = ncores)
 	names(out_test$PVALs) = dimnames(KK)[[3]]
 	names(out_test$omni_PVALs) = rownames(OMNI)
 	
