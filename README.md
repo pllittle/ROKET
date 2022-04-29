@@ -21,12 +21,16 @@ for(pack in req_packs){
 
 	if( pack %in% c("smartr","ROKET") ){
 		repo = sprintf("pllittle/%s",pack)
-		devtools::install_github(repo = repo,
-			build_vignettes = TRUE)
+		bb = tryCatch(devtools::install_github(repo = repo,
+			build_vignettes = TRUE),
+			error = function(ee){"error"})
 	} else {
-		install.packages(pack)
+		bb = tryCatch(install.packages(pack),
+			error = function(ee){"error"})
 	}
 	
+	if( !is.null(bb) && bb == "error" )
+		stop(sprintf("Error for package = %s",pack))
 	rerun = 1
 }
 
