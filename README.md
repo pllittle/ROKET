@@ -9,9 +9,10 @@ This package is designed to perform optimal transport and hypothesis testing on 
 ```R
 # Dependencies
 req_packs = c("devtools","Rcpp","RcppArmadillo","reshape2",
-	"smartr","MiRKAT","ggplot2","ROKET")
+	"ggdendro","smartr","MiRKAT","ggplot2","ROKET")
 all_packs = as.character(installed.packages()[,1])
 rerun = 0
+build_vign = ifelse(Sys.getenv("RSTUDIO_PANDOC") == "",FALSE,TRUE)
 
 for(pack in req_packs){
 	if( pack %in% all_packs ){
@@ -22,10 +23,12 @@ for(pack in req_packs){
 	if( pack %in% c("smartr","ROKET") ){
 		repo = sprintf("pllittle/%s",pack)
 		bb = tryCatch(devtools::install_github(repo = repo,
-			build_vignettes = TRUE),
+			build_vignettes = build_vign,
+			dependencies = TRUE),
 			error = function(ee){"error"})
 	} else {
-		bb = tryCatch(install.packages(pack),
+		bb = tryCatch(install.packages(pkgs = pack,
+			dependencies = TRUE),
 			error = function(ee){"error"})
 	}
 	
