@@ -19,7 +19,8 @@ for(pack in req_packs){
 		library(package = pack,character.only = TRUE)
 		next
 	}
-
+	
+	bb = NULL
 	if( pack %in% c("smartr","ROKET") ){
 		repo = sprintf("pllittle/%s",pack)
 		bb = tryCatch(devtools::install_github(repo = repo,
@@ -50,7 +51,7 @@ vignette(topic = "intro",package = "ROKET")
 ```
 
 ## Citation
-Little, P., Hsu, L., Sun, W. (2021). ROKET: Associating Somatic Mutation with Clinical Outcomes through Kernel Regression and Optimal Transport. *bioRxiv*. [[HTML](https://www.biorxiv.org/content/10.1101/2021.12.23.474064v1), [PDF](https://www.biorxiv.org/content/10.1101/2021.12.23.474064v1.full.pdf)]
+Little, P., Hsu, L., [Sun, W.](https://github.com/sunway1999) (2021). ROKET: Associating Somatic Mutation with Clinical Outcomes through Kernel Regression and Optimal Transport. *bioRxiv*. [[HTML](https://www.biorxiv.org/content/10.1101/2021.12.23.474064v1), [PDF](https://www.biorxiv.org/content/10.1101/2021.12.23.474064v1.full.pdf)]
 
 ## Workflow
 
