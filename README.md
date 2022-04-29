@@ -8,7 +8,7 @@ This package is designed to perform optimal transport and hypothesis testing on 
 
 ```R
 # Dependencies
-req_packs = c("devtools","Rcpp","RcppArmadillo",
+req_packs = c("devtools","Rcpp","RcppArmadillo","reshape2",
 	"smartr","MiRKAT","ggplot2","ROKET")
 all_packs = as.character(installed.packages()[,1])
 rerun = 0
