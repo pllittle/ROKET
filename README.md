@@ -13,7 +13,7 @@ This package is designed to perform optimal transport and hypothesis testing on 
 ```R
 # Dependencies
 req_packs = c("devtools","Rcpp","RcppArmadillo","reshape2",
-	"ggdendro","smartr","MiRKAT","ggplot2","ROKET")
+	"ggdendro","smarter","MiRKAT","ggplot2","ROKET")
 all_packs = as.character(installed.packages()[,1])
 rerun = 0
 build_vign = ifelse(Sys.getenv("RSTUDIO_PANDOC") == "",FALSE,TRUE)
@@ -25,7 +25,7 @@ for(pack in req_packs){
 	}
 	
 	bb = NULL
-	if( pack %in% c("smartr","ROKET") ){
+	if( pack %in% c("smarter","ROKET") ){
 		repo = sprintf("pllittle/%s",pack)
 		bb = tryCatch(devtools::install_github(repo = repo,
 			build_vignettes = build_vign,
@@ -55,7 +55,7 @@ vignette(topic = "intro",package = "ROKET")
 ```
 
 ## Citation
-Little, P., Hsu, L., [Sun, W.](https://github.com/sunway1999) (2021). ROKET: Associating Somatic Mutation with Clinical Outcomes through Kernel Regression and Optimal Transport. *bioRxiv*. [[HTML](https://www.biorxiv.org/content/10.1101/2021.12.23.474064v1), [PDF](https://www.biorxiv.org/content/10.1101/2021.12.23.474064v1.full.pdf)]
+Little, P., [Hsu, L.](https://www.fredhutch.org/en/faculty-lab-directory/hsu-li.html), [Sun, W.](https://github.com/sunway1999) (2021). ROKET: Associating Somatic Mutation with Clinical Outcomes through Kernel Regression and Optimal Transport. *bioRxiv*. [[HTML](https://www.biorxiv.org/content/10.1101/2021.12.23.474064v1), [PDF](https://www.biorxiv.org/content/10.1101/2021.12.23.474064v1.full.pdf)]
 
 ## Workflow
 
