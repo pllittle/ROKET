@@ -49,7 +49,7 @@ Assuming all software dependencies and **ROKET** installation are installed, we 
 
 ```{r setup,warning = FALSE}
 # Load libraries
-req_packs = c("devtools","smartr","ggplot2","reshape2",
+req_packs = c("devtools","smarter","ggplot2","reshape2",
   "survival","ggdendro","MiRKAT","ROKET")
 for(pack in req_packs){
   library(package = pack,character.only = TRUE)

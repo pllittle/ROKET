@@ -204,7 +204,7 @@ kernTEST = function(RESI,KK,OMNI,nPERMS = 1e5,ncores = 1){
 
 
 #' @importFrom stats dist lm rnorm runif
-#' @importFrom smartr smart_df smart_progress 
+#' @importFrom smarter smart_df smart_progress 
 #'	smart_mkdir smart_table smart_digits smart_names
 #'	make_dummy
 #' @importFrom survival Surv coxph
@@ -226,11 +226,11 @@ NULL
 # devtools::document(pkg = pack_dir); usethis::use_gpl3_license()
 # Sys.setenv("RSTUDIO_PANDOC" = "C:/Program Files/RStudio/bin/pandoc")
 # check_pandoc = rmarkdown::pandoc_available(); check_pandoc
-#### usethis::use_vignette(name = "test",title = "Testing")
-# make_vign = check_pandoc && !TRUE; make_vign
-# devtools::check(pkg = pack_dir,manual = TRUE,cran = FALSE,error_on = c("warning","note")[1],vignettes = make_vign)
+# make_vign = check_pandoc && TRUE; make_vign
+# devtools::check(pkg = pack_dir,manual = TRUE,cran = TRUE,error_on = c("warning","note")[2],vignettes = make_vign)
 # devtools::install(pack_dir,build_vignettes = make_vign)
-
+# bb = readLines("../DESCRIPTION"); vers = strsplit(bb[grepl("Version",bb)]," ")[[1]][2]; vers
+# devtools::build(pkg = pack_dir,path = sprintf("C:/Users/Admin/Desktop/%s_%s.tar.gz",pack,vers))
 
 ###
 
