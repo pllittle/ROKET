@@ -1,11 +1,12 @@
 <div align="left">
-<a href=""><img src="https://img.shields.io/badge/R-%23276DC3.svg?style=square&logo=r&logoColor=pink&label=ROKET" width="500" /></a>
+<a href=""><img src="https://img.shields.io/badge/R-%23276DC3.svg?style=square&logo=r&logoColor=pink&label=ROKET" height="100" /></a>
 </div>
 
 <!-- badges: start -->
 ![C++](https://img.shields.io/badge/C++-%2300599C.svg?style=square&logo=c%2B%2B&logoColor=gold)
 ![R](https://img.shields.io/badge/R-%23276DC3.svg?style=square&logo=r&logoColor=pink)
 ![CRAN status](https://www.r-pkg.org/badges/version/ROKET)
+[![DOI](https://zenodo.org/badge/DOI/10.1101/2021.12.23.474064.svg)](https://doi.org/10.1101/2021.12.23.474064)
 <!-- badges: end -->
 
 This package is designed to perform optimal transport and hypothesis testing on kernel matrices when performing kernel regression. The software is optimized for calculating distance between pairs of samples based on the pairs of mutated gene statuses.
