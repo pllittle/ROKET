@@ -53,11 +53,13 @@ run_myOT = function(XX,YY,COST,EPS,LAMBDA1,LAMBDA2,
 	if( length(YY) != ncol(COST) ) stop("length(YY) != ncol(COST)")
 	if( !all(nXX == nrCOST) ) stop("row COST name mismatch")
 	if( !all(nYY == ncCOST) ) stop("column COST name mismatch")
+	if( sum(XX) <= 0 ) stop("XX needs to have mass > 0")
+	if( sum(YY) <= 0 ) stop("YY needs to have mass > 0")
 	
 	# If there are zeros in XX or YY, subset
 	XX2 = XX[XX > 0]
 	YY2 = YY[YY > 0]
-	COST_XY = COST[names(XX2),names(YY2)]
+	COST_XY = COST[names(XX2),names(YY2),drop = FALSE]
 	
 	if( sum(XX2) <= 0 ) stop("XX needs to have mass > 0")
 	if( sum(YY2) <= 0 ) stop("YY needs to have mass > 0")
@@ -136,13 +138,10 @@ run_myOTs = function(ZZ,COST,EPS,LAMBDA1,LAMBDA2,
 		conv = conv,max_iter = max_iter,ncores = ncores,
 		show = verbose,show_iter = show_iter)
 	
-	out_OT$DIST = smart_names(out_OT$DIST,
+	DIST = smart_names(out_OT$DIST,
 		ROW = colnames(ZZ),COL = colnames(ZZ))
-	out_OT$sum_OT = smart_names(out_OT$sum_OT,
-		ROW = colnames(ZZ),COL = colnames(ZZ))
-	out_OT$DIST_2 = out_OT$DIST / out_OT$sum_OT
 	
-	return(out_OT)
+	return(DIST)
 	
 }
 
