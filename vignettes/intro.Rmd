@@ -269,7 +269,7 @@ show_tile(MAT = ZZ,
 # Store all distances
 DD = array(data = NA,dim = c(NN,NN,5))
 dimnames(DD)[1:2] = list(NN_nms,NN_nms)
-dimnames(DD)[[3]] = c("EUC",sprintf("OT_LAM%s",c(0.5,1.0,5.0,Inf)))
+dimnames(DD)[[3]] = c("EUC","OT_Balanced",sprintf("OT_LAM%s",c(0.5,1.0,5.0)))
 ```
 
 We can look at the distribution of gene mutation frequencies.
@@ -326,7 +326,7 @@ show_tile(MAT = tmpOT,LABEL = "Balanced OT (showing only genes mutated in each s
   DIGITS = 2)
 
 # Pairwise distance
-outOT$DIST_1
+outOT$DIST
 ```
 
 Let's try again but with unbalanced OT and $\lambda = 0.5$. We need to set `balance = FALSE` and specify `LAMBDA1 = 0.5` and `LAMBDA2 = 0.5`.
@@ -349,7 +349,7 @@ show_tile(MAT = tmpOT,
   DIGITS = 2)
 
 # Pairwise distance
-outOT$DIST_1
+outOT$DIST
 ```
 
 #### Code between all sample pairs
@@ -361,11 +361,10 @@ outOTs = run_myOTs(ZZ = t(ZZ),COST = 1 - GS,
   EPS = 1e-3,balance = TRUE,LAMBDA1 = 1,
   LAMBDA2 = 1,conv = 1e-5,max_iter = 3e3,
   ncores = 1,verbose = FALSE)
-# outOTs$DIST[1:5,1:5]
 
-hout = hclust(as.dist(outOTs$DIST))
+hout = hclust(as.dist(outOTs))
 ord = hout$labels[hout$order]
-show_tile(MAT = outOTs$DIST[ord,ord],
+show_tile(MAT = outOTs[ord,ord],
   LABEL = "Balanced OT Distances",
   TYPE = "DIST",DIGITS = 1)
 ```
@@ -373,12 +372,12 @@ show_tile(MAT = outOTs$DIST[ord,ord],
 We can run calculations for various $\lambda$ values. For shorthand, $\lambda$ = Inf corresponds to balanced OT.
 
 ```{r full_OT_calc,fig.dim = c(8,5),eval = ot_eval}
-LAMs = c(0.5,1.0,5.0,Inf)
+LAMs = c(0,0.5,1.0,5.0)
 
 for(LAM in LAMs){
   # LAM = LAMs[2]
   
-  BAL = ifelse(is.infinite(LAM),TRUE,FALSE)
+  BAL = ifelse(LAM == 0,TRUE,FALSE)
   LAM2 = ifelse(BAL,1,LAM)
   
   outOTs = run_myOTs(ZZ = t(ZZ),COST = 1 - GS,
@@ -386,17 +385,18 @@ for(LAM in LAMs){
     LAMBDA2 = LAM2,conv = 1e-5,max_iter = 3e3,
     ncores = 1,verbose = FALSE)
   
-  hout = hclust(as.dist(outOTs$DIST))
+  hout = hclust(as.dist(outOTs))
   ord = hout$labels[hout$order]
   
   LABEL = ifelse(BAL,"OT Distances (Balanced)",
     sprintf("OT Distances (Lambda = %s)",LAM))
+  LABEL2 = ifelse(BAL,"OT_Balanced",sprintf("OT_LAM%s",LAM))
   
-  gg = show_tile(MAT = outOTs$DIST[ord,ord],
+  gg = show_tile(MAT = outOTs[ord,ord],
     LABEL = LABEL,TYPE = "DIST",DIGITS = 2)
   print(gg)
   
-  DD[,,sprintf("OT_LAM%s",LAM)] = outOTs$DIST
+  DD[,,LABEL2] = outOTs
   rm(outOTs)
 }
 
@@ -410,7 +410,7 @@ We can see that Euclidean distance calculations on gene mutation statuses alone 
 nms = dimnames(DD)[[3]]; nms
 
 for(nm in nms){
-  # nm = nms[1]
+  # nm = nms[2]
   
   hout = hclust(as.dist(DD[,,nm]))
   hdend = as.dendrogram(hout)

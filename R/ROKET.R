@@ -78,12 +78,9 @@ run_myOT = function(XX,YY,COST,EPS,LAMBDA1,LAMBDA2,
 	OT_fin[names(XX2),names(YY2)] = OT
 	
 	# Calculate OT metrics
-	DIST_1 = sum(COST * OT_fin)
-	sum_OT = sum(OT_fin)
-	DIST_2 = DIST_1 / sum_OT
+	DIST = sum(COST * OT_fin)
 	
-	out = list(OT = OT_fin,DIST_1 = DIST_1,
-		sum_OT = sum_OT,DIST_2 = DIST_2)
+	out = list(OT = OT_fin,DIST = DIST)
 	return(out)
 	
 }
@@ -200,28 +197,6 @@ kernTEST = function(RESI,KK,OMNI,nPERMS = 1e5,ncores = 1){
 	
 }
 
-
-
-#' @importFrom stats dist lm rnorm runif
-#' @importFrom smarter smart_df smart_progress 
-#'	smart_mkdir smart_table smart_digits smart_names
-#'	make_dummy
-#' @importFrom survival Surv coxph
-#' @importFrom utils combn
-#' @importFrom MiRKAT D2K MiRKAT MiRKATS
-#' @importFrom ggplot2 ggsave theme element_text
-#'	unit ggplot aes facet_grid geom_line geom_hline
-#'	ylim xlab ylab labs geom_boxplot element_blank
-#'	element_line
-#' @importFrom Rcpp sourceCpp
-#' @useDynLib ROKET
-NULL
-
-# Create package
-# rm(list=ls()); library(smarter)
-# smart_prepPack(pack_dir = "C:/Users/Admin/Desktop/github/ROKET",
-#		pandoc = "C:/Program Files/RStudio/bin/pandoc",
-#		make_vign = TRUE,cran = FALSE,build_dir = "C:/Users/Admin/Desktop")
 
 ###
 
