@@ -1,5 +1,5 @@
 <div align="left">
-<a href=""><img src="https://img.shields.io/badge/R-%23276DC3.svg?style=square&logo=r&logoColor=pink&label=ROKET" height="100" /></a>
+<a href=""><img src="https://img.shields.io/badge/R-%23276DC3.svg?style=square&logo=r&logoColor=pink&label=ROKET" height="80" /></a>
 </div>
 
 <!-- badges: start -->
@@ -9,9 +9,16 @@
 [![DOI](https://zenodo.org/badge/DOI/10.1101/2021.12.23.474064.svg)](https://doi.org/10.1101/2021.12.23.474064)
 <!-- badges: end -->
 
-This package is designed to perform optimal transport and hypothesis testing on kernel matrices when performing kernel regression. The software is optimized for calculating distance between pairs of samples based on the pairs of mutated gene statuses.
+This package is designed to perform optimal transport and hypothesis 
+testing on kernel matrices when performing kernel regression. The 
+software is optimized for calculating distance between pairs of 
+samples based on the pairs of mutated gene statuses.
 
 ## Installation
+
+<details>
+
+<summary>Click to expand!</summary>
 
 ```R
 # Dependencies
@@ -48,7 +55,11 @@ for(pack in req_packs){
 if( rerun == 1 ) stop("Re-run above code")
 ```
 
-By default, the software runs a single thread and loops through all pairs of samples for distance calculations. However if OpenMP is installed, the user can make use of multi-threaded calculations.
+By default, the software runs a single thread and loops through all 
+pairs of samples for distance calculations. However if OpenMP is 
+installed, the user can make use of multi-threaded calculations.
+
+</details>
 
 ## Vignette
 
@@ -58,8 +69,14 @@ vignette(topic = "intro",package = "ROKET")
 ```
 
 ## Citation
-Little, P., [Hsu, L.](https://www.fredhutch.org/en/faculty-lab-directory/hsu-li.html), [Sun, W.](https://github.com/sunway1999) (2021). ROKET: Associating Somatic Mutation with Clinical Outcomes through Kernel Regression and Optimal Transport. *bioRxiv*. [[HTML](https://www.biorxiv.org/content/10.1101/2021.12.23.474064v1), [PDF](https://www.biorxiv.org/content/10.1101/2021.12.23.474064v1.full.pdf)]
+Little, P., [Hsu, L.](https://www.fredhutch.org/en/faculty-lab-directory/hsu-li.html), 
+[Sun, W.](https://github.com/sunway1999) (2021). ROKET: Associating 
+Somatic Mutation with Clinical Outcomes through Kernel Regression 
+and Optimal Transport. *bioRxiv*. 
+[[HTML](https://www.biorxiv.org/content/10.1101/2021.12.23.474064v1), 
+[PDF](https://www.biorxiv.org/content/10.1101/2021.12.23.474064v1.full.pdf)]
 
 ## Workflow
 
-R package and code to perform the manuscript's workflow are provided [here](https://github.com/pllittle/ROKETworkflow).
+R package and code to perform the manuscript's workflow are 
+provided [here](https://github.com/pllittle/ROKETworkflow).
