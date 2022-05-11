@@ -7,6 +7,9 @@
 ![R](https://img.shields.io/badge/R-%23276DC3.svg?style=square&logo=r&logoColor=pink)
 ![CRAN status](https://www.r-pkg.org/badges/version/ROKET)
 [![DOI](https://zenodo.org/badge/DOI/10.1101/2021.12.23.474064.svg)](https://doi.org/10.1101/2021.12.23.474064)
+![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![](https://img.shields.io/github/languages/code-size/pllittle/ROKET.svg)](https://github.com/pllittle/ROKET)
+[![](https://img.shields.io/github/last-commit/pllittle/ROKET.svg)](https://github.com/pllittle/ROKET/commits/master)
 <!-- badges: end -->
 
 This package is designed to perform optimal transport and hypothesis 
