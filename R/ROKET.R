@@ -35,7 +35,7 @@
 #'	at multiples of \code{show_iter} but only if \code{verbose = TRUE}.
 #' 
 #' @export
-run_myOT = function(XX,YY,COST,EPS,LAMBDA1,LAMBDA2,
+run_myOT = function(XX,YY,COST,EPS,LAMBDA1,LAMBDA2 = NULL,
 	balance = FALSE,conv = 1e-5,max_iter = 3e3,
 	verbose = TRUE,show_iter = 50){
 	
@@ -55,6 +55,7 @@ run_myOT = function(XX,YY,COST,EPS,LAMBDA1,LAMBDA2,
 	if( !all(nYY == ncCOST) ) stop("column COST name mismatch")
 	if( sum(XX) <= 0 ) stop("XX needs to have mass > 0")
 	if( sum(YY) <= 0 ) stop("YY needs to have mass > 0")
+	if( is.null(LAMBDA2) ) LAMBDA2 = LAMBDA1
 	
 	# If there are zeros in XX or YY, subset
 	XX2 = XX[XX > 0]
@@ -99,18 +100,17 @@ run_myOT = function(XX,YY,COST,EPS,LAMBDA1,LAMBDA2,
 #' @param show_iter A positive integer to display iteration details
 #'	at multiples of \code{show_iter} but only if \code{verbose = TRUE}.
 #' @export
-run_myOTs = function(ZZ,COST,EPS,LAMBDA1,LAMBDA2,
+run_myOTs = function(ZZ,COST,EPS,LAMBDA1,LAMBDA2 = NULL,
 	balance,conv = 1e-5,max_iter = 3e3,ncores = 1,
 	verbose = TRUE,show_iter = 50){
 	
 	# Check inputs
-	mass = apply(ZZ,2,function(xx){
-		sum(xx[xx > 0])
-	})
+	mass = colSums(ZZ)
 	if( any(mass <= 0) )
 		stop("A subset of samples have non-positive mass")
 	if( nrow(COST) != ncol(COST) ) stop("COST not square")
 	if( !all(COST == t(COST)) ) stop("COST not symmetric")
+	if( is.null(LAMBDA2) ) LAMBDA2 = LAMBDA1
 	
 	# Subset features of ZZ with any mass
 	mass_rows = apply(ZZ,1,function(xx){
