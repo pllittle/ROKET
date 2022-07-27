@@ -10,7 +10,7 @@ run_myOT(
   COST,
   EPS,
   LAMBDA1,
-  LAMBDA2,
+  LAMBDA2 = NULL,
   balance = FALSE,
   conv = 1e-05,
   max_iter = 3000,

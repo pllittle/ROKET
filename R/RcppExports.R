@@ -13,3 +13,7 @@ Rcpp_KernTest <- function(RESI, cKK, OMNI, nPERMS = 2e3L, ncores = 1L) {
     .Call('_ROKET_Rcpp_KernTest', PACKAGE = 'ROKET', RESI, cKK, OMNI, nPERMS, ncores)
 }
 
+Rcpp_KernTest_FL <- function(YY, XX, cKK, OMNI, nPERMS = 2e3L) {
+    .Call('_ROKET_Rcpp_KernTest_FL', PACKAGE = 'ROKET', YY, XX, cKK, OMNI, nPERMS)
+}
+

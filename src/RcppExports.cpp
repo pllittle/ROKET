@@ -70,11 +70,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// Rcpp_KernTest_FL
+Rcpp::List Rcpp_KernTest_FL(const arma::vec& YY, const arma::mat& XX, const arma::cube& cKK, const arma::umat& OMNI, const arma::uword& nPERMS);
+RcppExport SEXP _ROKET_Rcpp_KernTest_FL(SEXP YYSEXP, SEXP XXSEXP, SEXP cKKSEXP, SEXP OMNISEXP, SEXP nPERMSSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type YY(YYSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type XX(XXSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type cKK(cKKSEXP);
+    Rcpp::traits::input_parameter< const arma::umat& >::type OMNI(OMNISEXP);
+    Rcpp::traits::input_parameter< const arma::uword& >::type nPERMS(nPERMSSEXP);
+    rcpp_result_gen = Rcpp::wrap(Rcpp_KernTest_FL(YY, XX, cKK, OMNI, nPERMS));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_ROKET_Rcpp_run_OT", (DL_FUNC) &_ROKET_Rcpp_run_OT, 12},
     {"_ROKET_Rcpp_run_full_OT", (DL_FUNC) &_ROKET_Rcpp_run_full_OT, 12},
     {"_ROKET_Rcpp_KernTest", (DL_FUNC) &_ROKET_Rcpp_KernTest, 5},
+    {"_ROKET_Rcpp_KernTest_FL", (DL_FUNC) &_ROKET_Rcpp_KernTest_FL, 5},
     {NULL, NULL, 0}
 };
 

@@ -11,7 +11,7 @@ Description: Perform optimal transport on somatic point mutations
 Encoding: UTF-8
 Imports: Rcpp, smarter, ggplot2, survival, MiRKAT
 LinkingTo: Rcpp, RcppArmadillo
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
 License: GPL (>= 3)
 Suggests: rmarkdown, knitr, reshape2,
 	ggdendro

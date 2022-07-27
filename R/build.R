@@ -18,7 +18,6 @@ NULL
 # smart_prepPack(pack_dir = "C:/Users/Admin/Desktop/github/ROKET",
 #		pandoc = "C:/Program Files/RStudio/bin/pandoc",
 #		make_vign = TRUE,cran = FALSE,
-#		build_dir = "C:/Users/Admin/Desktop")
 #		build_dir = NULL)
 
 ###

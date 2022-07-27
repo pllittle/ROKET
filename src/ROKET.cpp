@@ -313,7 +313,6 @@ Rcpp::List Rcpp_KernTest(const arma::vec& RESI,
 	}
 	
 	return Rcpp::List::create(
-		Rcpp::Named("pSTAT",pSTAT),
 		Rcpp::Named("PVALs",
 			Rcpp::NumericVector(PVALs.begin(),PVALs.end())),
 		Rcpp::Named("omni_PVALs",
@@ -322,5 +321,73 @@ Rcpp::List Rcpp_KernTest(const arma::vec& RESI,
 	
 }
 
-
+// [[Rcpp::export]]
+Rcpp::List Rcpp_KernTest_FL(const arma::vec& YY,
+	const arma::mat& XX,const arma::cube& cKK,
+	const arma::umat& OMNI,const arma::uword& nPERMS = 2e3){
+	
+	// Fit null model, get residuals
+	arma::uword NN = YY.n_elem,PP = XX.n_cols,
+		nKK = cKK.n_slices, pp, kk, oo;
+	arma::mat I_N = arma::eye<arma::mat>(NN,NN),
+		HAT = XX * arma::inv(XX.t() * XX) * XX.t();
+	arma::vec RESI = (I_N - HAT) * YY,
+		PRED = HAT * YY,tmp_PRED = PRED,
+		tmp_RESI = arma::zeros<arma::vec>(NN),
+		PVALs = arma::zeros<arma::vec>(nKK);
+	double SIG2 = 0.0;
+	
+	// Store 'new' outcomes
+	arma::mat OUT = arma::zeros<arma::mat>(nPERMS + 1,NN);
+	for(pp = 0; pp < nPERMS + 1; pp++){
+		if( pp == 0 ){
+			OUT.row(pp) = YY.t();
+		} else {
+			OUT.row(pp) = PRED.t() + arma::shuffle(RESI).t();
+		}
+	}
+	
+	// Store statistics
+	arma::mat STAT = arma::zeros<arma::mat>(nPERMS + 1,nKK);
+	for(pp = 0; pp < nPERMS + 1; pp++){
+		
+		// Re-fit model
+		tmp_RESI = (I_N - HAT) * OUT.row(pp).t();
+		SIG2 = arma::dot(tmp_RESI,tmp_RESI) / ( NN - PP );
+		
+		// Calc statistics
+		for(kk = 0; kk < nKK; kk++){
+			STAT.at(pp,kk) = 0.5 / SIG2 * 
+				arma::dot(tmp_RESI,cKK.slice(kk) * tmp_RESI);
+		}
+		
+	}
+	
+	// Transform stats to p-values
+	for(kk = 0; kk < nKK; kk++){
+		STAT.col(kk) = 1.0 - ( Rcpp_calc_rank(STAT.col(kk)) 
+			- 1.0 ) / (nPERMS + 1.0);
+		
+		// Permutation p-value per kernel
+		PVALs.at(kk) = STAT.at(0,kk);
+	}
+	
+	// Calculate omnibus p-values
+	arma::vec omni_PVALs = arma::zeros<arma::vec>(OMNI.n_rows);
+	
+	for(oo = 0; oo < OMNI.n_rows; oo++){
+		arma::uvec tmp_cols = arma::find(OMNI.row(oo).t() == 1);
+		arma::mat tmp_mat = STAT.cols(tmp_cols);
+		omni_PVALs.at(oo) = arma::sum( arma::min(tmp_mat,1) 
+			<= arma::min(tmp_mat.row(0).t()) ) * 1.0 / (nPERMS + 1.0);
+	}
+	
+	return Rcpp::List::create(
+		Rcpp::Named("PVALs",
+			Rcpp::NumericVector(PVALs.begin(),PVALs.end())),
+		Rcpp::Named("omni_PVALs",
+			Rcpp::NumericVector(omni_PVALs.begin(),omni_PVALs.end()))
+		);
+	
+}
 

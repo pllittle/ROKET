@@ -151,11 +151,16 @@ run_myOTs = function(ZZ,COST,EPS,LAMBDA1,LAMBDA2 = NULL,
 #' @inheritParams run_myOTs
 #' @param RESI A numeric vector of null model residuals
 #'	\code{names(RESI)} must be set to maintain sample ordering
+#'	for survival regression, otherwise set \code{RESI} to \code{NULL}.
 #' @param KK An array containing double-centered positive semi-definite
 #'	kernel matrices. Refer to \code{MiRKAT::D2K()} for transforming 
 #'	distance matrices to kernel matrices. The \code{dimnames(KK)[[1]]} and 
 #'	\code{dimnames(KK)[[2]]} must match \code{names(RESI)}.
 #'	Also set dimnames(KK)[[3]] to keep track of each kernel matrix.
+#' @param YY A numeric vector of continuous outcomes to be fitted
+#'	in a linear model. Defaults to NULL for survival model.
+#' @param XX A numeric data matrix with first column for intercept,
+#'	a column of ones.
 #' @param OMNI A matrix of zeros and ones. Each column corresponds to a
 #'	distance matrix while each row corresponds to an omnibus test. Set
 #'	\code{rownames(OMNI)} for labeling outputted p-values and 
@@ -163,15 +168,33 @@ run_myOTs = function(ZZ,COST,EPS,LAMBDA1,LAMBDA2 = NULL,
 #' @param nPERMS A positive integer to specify the number of
 #'	permutation-based p-value calculation
 #' @export
-kernTEST = function(RESI,KK,OMNI,nPERMS = 1e5,ncores = 1){
+kernTEST = function(RESI = NULL,KK,YY = NULL,XX = NULL,
+	OMNI,nPERMS = 1e5,ncores = 1){
 	
-	samp_names = names(RESI)
+	REG = NULL
+	samp_names = NULL
+	if( !is.null(RESI) ){
+		REG = "SURV"
+		samp_names = names(RESI)
+	}
+	if( !is.null(YY) && !is.null(XX) ){
+		REG = "CONT"
+		if( !all(names(YY) == rownames(XX)) )
+			stop("name labeling mismatch")
+		samp_names = names(YY)
+	}
 	
-	if( is.null(samp_names) )
-		stop("Specify names(RESI)")
+	if( is.null(REG) || is.null(samp_names) )
+		stop("not an encoded model")
+	
 	if( is.null(dimnames(KK)[[3]]) || is.null(dimnames(KK)[[1]]) 
 		|| is.null(dimnames(KK)[[2]]) )
 		stop("Specify dimnames(KK) to track sample order and kernel matrices")
+	
+	if( is.null(samp_names) ){
+		if( REG == "SURV" ) stop("Specify names(RESI)")
+		if( REG == "CONT" ) stop("Specify names(YY) and rownames(XX)")
+	}
 	
 	if( !all(samp_names == dimnames(KK[[1]])) )
 		stop("names(RESI) != dimnames(KK[[1]]")
@@ -188,8 +211,14 @@ kernTEST = function(RESI,KK,OMNI,nPERMS = 1e5,ncores = 1){
 	if( any(rowSums(OMNI) == 0) )
 		stop("Each row of OMNI should contain at least one non-zero element")
 	
-	out_test = Rcpp_KernTest(RESI = RESI,cKK = KK,
-		OMNI = OMNI,nPERMS = nPERMS,ncores = ncores)
+	if( REG == "SURV" ){
+		out_test = Rcpp_KernTest(RESI = RESI,cKK = KK,
+			OMNI = OMNI,nPERMS = nPERMS,ncores = ncores)
+	} else if( REG == "CONT" ){
+		out_test = Rcpp_KernTest_FL(YY = YY,XX = XX,
+			cKK = KK,OMNI = OMNI,nPERMS = nPERMS)
+	}
+	
 	names(out_test$PVALs) = dimnames(KK)[[3]]
 	names(out_test$omni_PVALs) = rownames(OMNI)
 	
