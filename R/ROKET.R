@@ -179,6 +179,8 @@ kernTEST = function(RESI = NULL,KK,YY = NULL,XX = NULL,
 	}
 	if( !is.null(YY) && !is.null(XX) ){
 		REG = "CONT"
+		if( is.null(names(YY)) ) stop("Add names(YY)")
+		if( is.null(rownames(XX)) ) stop("Add rownames(XX)")
 		if( !all(names(YY) == rownames(XX)) )
 			stop("name labeling mismatch")
 		samp_names = names(YY)
