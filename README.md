@@ -73,11 +73,10 @@ vignette(topic = "intro",package = "ROKET")
 
 ## Citation
 Little, P., [Hsu, L.](https://www.fredhutch.org/en/faculty-lab-directory/hsu-li.html), 
-[Sun, W.](https://github.com/sunway1999) (2021). ROKET: Associating 
-Somatic Mutation with Clinical Outcomes through Kernel Regression 
-and Optimal Transport. *bioRxiv*. 
-[[HTML](https://www.biorxiv.org/content/10.1101/2021.12.23.474064v1), 
-[PDF](https://www.biorxiv.org/content/10.1101/2021.12.23.474064v1.full.pdf)]
+[Sun, W.](https://github.com/sunway1999) (2022). Associating Somatic Mutation with Clinical Outcomes through Kernel Regression and Optimal Transport. *Biometrics*. 
+[[HTML](https://onlinelibrary.wiley.com/doi/abs/10.1111/biom.13769), 
+[PDF](https://onlinelibrary.wiley.com/doi/epdf/10.1111/biom.13769),
+[SUPP](https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fbiom.13769&file=biom13769-sup-0001-SuppMat.pdf)]
 
 ## Workflow
 
