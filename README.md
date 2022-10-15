@@ -6,7 +6,7 @@
 ![C++](https://img.shields.io/badge/C++-%2300599C.svg?style=square&logo=c%2B%2B&logoColor=gold)
 ![R](https://img.shields.io/badge/R-%23276DC3.svg?style=square&logo=r&logoColor=pink)
 ![CRAN status](https://www.r-pkg.org/badges/version/ROKET)
-[![DOI](https://zenodo.org/badge/DOI/10.1101/2021.12.23.474064.svg)](https://doi.org/10.1101/2021.12.23.474064)
+[![DOI](https://zenodo.org/badge/DOI/10.1111/biom.13769.svg)](https://doi.org/10.1111/biom.13769)
 [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![](https://img.shields.io/github/languages/code-size/pllittle/ROKET.svg)](https://github.com/pllittle/ROKET)
 [![](https://img.shields.io/github/last-commit/pllittle/ROKET.svg)](https://github.com/pllittle/ROKET/commits/master)
