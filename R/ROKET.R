@@ -33,6 +33,8 @@
 #' @param verbose Boolean value to display verbose function output.
 #' @param show_iter A positive integer to display iteration details
 #'	at multiples of \code{show_iter} but only if \code{verbose = TRUE}.
+#' @return A R list containing the optimal transport matrix and 
+#'	associated distance metric.
 #' 
 #' @export
 run_myOT = function(XX,YY,COST,EPS,LAMBDA1,LAMBDA2 = NULL,
@@ -99,6 +101,7 @@ run_myOT = function(XX,YY,COST,EPS,LAMBDA1,LAMBDA2 = NULL,
 #'	to reduce computational runtime when running for loops
 #' @param show_iter A positive integer to display iteration details
 #'	at multiples of \code{show_iter} but only if \code{verbose = TRUE}.
+#' @return A R numeric matrix of pairwise distances.
 #' @export
 run_myOTs = function(ZZ,COST,EPS,LAMBDA1,LAMBDA2 = NULL,
 	balance,conv = 1e-5,max_iter = 3e3,ncores = 1,
@@ -167,6 +170,7 @@ run_myOTs = function(ZZ,COST,EPS,LAMBDA1,LAMBDA2 = NULL,
 #'	\code{colnames(OMNI)} which should match \code{dimnames(KK)[[3]]}.
 #' @param nPERMS A positive integer to specify the number of
 #'	permutation-based p-value calculation
+#' @return A R list of p-values and omnibus p-values.
 #' @export
 kernTEST = function(RESI = NULL,KK,YY = NULL,XX = NULL,
 	OMNI,nPERMS = 1e5,ncores = 1){

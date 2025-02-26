@@ -1,1 +1,5 @@
+debug
 ^LICENSE\.md$
+^README\.md$
+vignettes/*_cache
+vignettes/*_files

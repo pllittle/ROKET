@@ -21,14 +21,13 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 bibliography: references.bib
+csl: apa.csl
 ---
 
 ```{r include = FALSE}
-rm(list = ls())
-
 knitr::opts_chunk$set(
 	collapse = TRUE,comment = "#>",
-	echo = TRUE,cache = FALSE,
+	echo = TRUE,cache = TRUE,
 	dev = "png")
 ot_eval = TRUE
 ```
@@ -45,7 +44,7 @@ ot_eval = TRUE
 
 # Overview
 
-Assuming all software dependencies and **ROKET** installation are installed, we can begin.
+Assuming all software dependencies and **ROKET** [@little2023associating] installation are installed, we can begin.
 
 ```{r setup,warning = FALSE}
 # Load libraries

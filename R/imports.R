@@ -13,12 +13,5 @@
 #' @useDynLib ROKET
 NULL
 
-# Create package
-# rm(list=ls()); library(smarter)
-# smart_prepPack(pack_dir = "C:/Users/Admin/Desktop/github/ROKET",
-#		pandoc = "C:/Program Files/RStudio/bin/pandoc",
-#		make_vign = TRUE,cran = FALSE,
-#		build_dir = NULL)
-
 ###
 

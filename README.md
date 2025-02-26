@@ -38,7 +38,7 @@ for(pack in req_packs){
 	}
 	
 	bb = NULL
-	if( pack %in% c("smarter","ROKET") ){
+	if( pack %in% c("ROKET") ){
 		repo = sprintf("pllittle/%s",pack)
 		bb = tryCatch(devtools::install_github(repo = repo,
 			build_vignettes = build_vign,
@@ -73,10 +73,10 @@ vignette(topic = "intro",package = "ROKET")
 
 ## Citation
 Little, P., [Hsu, L.](https://www.fredhutch.org/en/faculty-lab-directory/hsu-li.html), 
-[Sun, W.](https://github.com/sunway1999) (2022). Associating Somatic Mutation with Clinical Outcomes through Kernel Regression and Optimal Transport. *Biometrics*. 
-[[HTML](https://onlinelibrary.wiley.com/doi/abs/10.1111/biom.13769), 
-[PDF](https://onlinelibrary.wiley.com/doi/epdf/10.1111/biom.13769),
-[SUPP](https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fbiom.13769&file=biom13769-sup-0001-SuppMat.pdf)]
+[Sun, W.](https://github.com/sunway1999) (2023). Associating Somatic Mutation with Clinical Outcomes through Kernel Regression and Optimal Transport. *Biometrics*. 
+[[HTML](https://academic.oup.com/biometrics/article/79/3/2705/7513797), 
+[PDF](https://academic.oup.com/biometrics/article-pdf/79/3/2705/56040357/biometrics_79_3_2705.pdf),
+[SUPP](https://academic.oup.com/biometrics/article/79/3/2705/7513797#supplementary-data)]
 
 ## Workflow
 

@@ -1,0 +1,18 @@
+bibentry("Article",
+	title		= "Associating somatic mutation with clinical outcomes through kernel regression and optimal transport",
+	author	= c(person("Paul","Little",
+								email = "pllittle321@gmail.com",
+								comment = c(ORCID = "0000-0002-9789-8501")),
+							person("Li","Hsu",
+								email = "lih@fredhutch.org",
+								comment = c(ORCID = "0000-0001-8168-4712")),
+							person("Wei","Sun",
+								email = "wsun@fredhutch.org",
+								comment = c(ORCID = "0000-0002-6350-1107"))
+						),
+	journal	= "Biometrics",
+	year		= "2023",
+	volume	= "79",
+	number	= "3",
+	pages		= "2705--2718",
+	doi			= "10.1111/biom.13769")
