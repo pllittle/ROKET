@@ -57,6 +57,9 @@ to reduce computational runtime when running for loops}
 \item{show_iter}{A positive integer to display iteration details
 at multiples of \code{show_iter} but only if \code{verbose = TRUE}.}
 }
+\value{
+A R numeric matrix of pairwise distances.
+}
 \description{
 run_myOTs
 }

@@ -42,6 +42,9 @@ permutation-based p-value calculation}
 \item{ncores}{A positive integer for the number of cores/threads
 to reduce computational runtime when running for loops}
 }
+\value{
+A R list of p-values and omnibus p-values.
+}
 \description{
 kernTEST
 }

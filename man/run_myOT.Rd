@@ -56,6 +56,10 @@ iterations to run the algorithm.}
 \item{show_iter}{A positive integer to display iteration details
 at multiples of \code{show_iter} but only if \code{verbose = TRUE}.}
 }
+\value{
+A R list containing the optimal transport matrix and 
+associated distance metric.
+}
 \description{
 Runs balanced or unbalanced optimal transport
 on two input vectors
