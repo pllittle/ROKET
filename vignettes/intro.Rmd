@@ -76,11 +76,11 @@ We would like to calculate the distance between the $i$th and $j$th samples in t
 
 Several optimal transport (OT) references to get familiarized with the framework, objective functions, updating equations, entropic regularizations, types of OT are provided:
 
-* @cuturi2013sinkhorn, [paper](https://arxiv.org/pdf/1306.0895.pdf)
-* @zhang2020review, [paper](https://arxiv.org/pdf/2008.02995.pdf)
-* @nath2020statistical, [paper](https://arxiv.org/pdf/2002.03179.pdf)
-* @fatras2021unbalanced, [paper](http://proceedings.mlr.press/v139/fatras21a/fatras21a.pdf)
-* @chapel2021unbalanced, [paper](https://arxiv.org/pdf/2106.04145.pdf)
+* @cuturi2013sinkhorn,
+* @zhang2021review,
+* @jagarlapudi2020statistical,
+* @fatras2021unbalanced,
+* @chapel2021unbalanced
 
 ### Basic Idea
 
@@ -470,7 +470,7 @@ where
 
 Since $\tilde{\bf{K}}$ is not guaranteed to be positive semi-definite, we perform spectral decomposition and replace negative eigenvalues with zero and re-calculate the kernel to arrive at $\bf{K}$. 
 
-For a single candidate distance matrix, transform the distance matrix to a kernel matrix and convert the object into a list, denoted by the object `KK`, code is provided below from the R package, [**MiRKAT**](https://cran.r-project.org/web/packages/MiRKAT/index.html) [@zhao2015testing;@plantinga2017mirkat].
+For a single candidate distance matrix, transform the distance matrix to a kernel matrix and convert the object into a list, denoted by the object `KK`, code is provided below from the R package, [**MiRKAT**](https://cran.r-project.org/package=MiRKAT) [@zhao2015testing;@plantinga2017mirkat].
 
 ```{r eval = FALSE}
 # For example, with Euclidean distance
