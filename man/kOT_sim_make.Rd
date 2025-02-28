@@ -17,6 +17,9 @@ kOT_sim_make(work_dir, NN = 200, nGENE = 500, nPATH = 25, RR = 200)
 
 \item{RR}{A positive integer for number of replicates to simulate}
 }
+\value{
+Nothing. Rds files are created within the simulation ROKET directory.
+}
 \description{
 Generates simulation files
 }

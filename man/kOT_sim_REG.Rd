@@ -19,6 +19,9 @@ kOT_sim_REG(work_dir, NN, nGENE, nPATH, SCEN, rr)
 
 \item{rr}{A positive integer indexing a replicate}
 }
+\value{
+Nothing. A rds file is created within the simulation ROKET directory.
+}
 \description{
 kOT_sim_REG
 }

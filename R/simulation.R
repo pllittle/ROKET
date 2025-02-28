@@ -6,7 +6,7 @@ setdirs = function(work_dir){
 	
 	# Make directories
 	verbose = TRUE
-	if( verbose ) cat(sprintf("%s: Make directories ...\n",date()))
+	if( verbose ) message(sprintf("%s: Make directories ...\n",date()),appendLF = FALSE)
 	proj_dir 	= file.path(work_dir,"sim_ROKET"); 	smart_mkdir(proj_dir)
 	sim_dir		= file.path(proj_dir,"sim"); 				smart_mkdir(sim_dir)
 	reps_dir 	= file.path(sim_dir,"REPS"); 				smart_mkdir(reps_dir)
@@ -14,7 +14,7 @@ setdirs = function(work_dir){
 	sout_dir	= file.path(sim_dir,"OUT");					smart_mkdir(sout_dir)
 	
 	# Output
-	if( verbose ) cat(sprintf("%s: Output ...\n",date()))
+	if( verbose ) message(sprintf("%s: Output ...\n",date()),appendLF = FALSE)
 	list(proj_dir = proj_dir,sim_dir = sim_dir,reps_dir = reps_dir,
 		rout_dir = rout_dir,sout_dir = sout_dir)
 	
@@ -98,7 +98,7 @@ kOT_sim_geneInfo = function(nGENE,nPATH,path_corr,prop_noise){
 kOT_sim_baseCov = function(subj_names){
 	
 	verbose = TRUE
-	if( verbose ) cat(sprintf("%s: Simulate baseline covariates ...\n",date()))
+	if( verbose ) message(sprintf("%s: Simulate baseline covariates ...\n",date()),appendLF = FALSE)
 	NN = length(subj_names)
 	XX = matrix(data = 1,nrow = NN,
 		ncol = 1,dimnames = list(seq(NN),"Int"))
@@ -113,7 +113,7 @@ kOT_sim_baseCov = function(subj_names){
 kOT_sim_sPATH = function(subj_names,path_names,SCEN){
 	
 	verbose = TRUE
-	if( verbose ) cat(sprintf("%s: Simulate individual pathways mutated ...\n",date()))
+	if( verbose ) message(sprintf("%s: Simulate individual pathways mutated ...\n",date()),appendLF = FALSE)
 	NN 				= length(subj_names)
 	nPATH 		= length(path_names)
 	vec_path 	= seq(nPATH)
@@ -144,7 +144,7 @@ kOT_sim_sPATH = function(subj_names,path_names,SCEN){
 kOT_sim_sMUT = function(sPATH,geneInfo,SCEN){
 	
 	verbose = TRUE
-	if( verbose ) cat(sprintf("%s: Simulate individual genes mutated ...\n",date()))
+	if( verbose ) message(sprintf("%s: Simulate individual genes mutated ...\n",date()),appendLF = FALSE)
 	NN = nrow(sPATH)
 	gene_names = rownames(geneInfo$gene_sim)
 	nGENE = length(gene_names)
@@ -225,7 +225,7 @@ kOT_sim_GEN = function(geneInfo,NN,SCEN){
 kOT_sim_pXX = function(sPATH,pBETA,maxWAY){
 	
 	verbose = TRUE
-	if( verbose ) cat(sprintf("%s: Construct pathway design matrix ...\n",date()))
+	if( verbose ) message(sprintf("%s: Construct pathway design matrix ...\n",date()),appendLF = FALSE)
 	nPATH = ncol(sPATH)
 	pXX = c()
 	aa = 1
@@ -326,6 +326,7 @@ kOT_sim_inputs = function(NN,nGENE,nPATH,path_corr,
 #' @param nGENE A positive integer for number of genes to simulate
 #' @param nPATH A positive integer for number of pathways to simulate
 #' @param RR A positive integer for number of replicates to simulate
+#' @return Nothing. Rds files are created within the simulation ROKET directory.
 #' @export
 kOT_sim_make = function(work_dir,NN = 200,
 	nGENE = 500,nPATH = 25,RR = 200){
@@ -365,7 +366,7 @@ kOT_sim_make = function(work_dir,NN = 200,
 	
 	for(SCEN in seq(4)){
 		# SCEN = 1
-		cat(sprintf("%s: SCEN = %s ...\n",date(),SCEN))
+		message(sprintf("%s: SCEN = %s ...\n",date(),SCEN),appendLF = FALSE)
 		
 		# Import scenario data
 		scen_fn = file.path(my_dirs$reps_dir,
@@ -474,6 +475,7 @@ kOT_sim_make = function(work_dir,NN = 200,
 #' @param SCEN An integer taking values 1, 2, 3, or 4
 #' @param ncores A positive integer specifying the number of
 #'	cores/threads to use for optimal transport calculations
+#' @return Nothing. Rds files are created within the simulation ROKET directory.
 #' @export
 kOT_sim_OT = function(work_dir,NN,nGENE,nPATH,SCEN,ncores = 1){
 	
@@ -506,7 +508,7 @@ kOT_sim_OT = function(work_dir,NN,nGENE,nPATH,SCEN,ncores = 1){
 		for(LAM in LAMs){
 			# LAM = LAMs[1]
 			
-			cat(sprintf("%s: LAM = %s ...\n",date(),LAM))
+			message(sprintf("%s: LAM = %s ...\n",date(),LAM),appendLF = FALSE)
 			tmp_name = sprintf("LAM.%s",LAM)
 			tmp_OT_fn = file.path(my_dirs$reps_dir,
 				sprintf("tmp_OT_SCEN%s_%s.rds",SCEN,tmp_name))
@@ -585,8 +587,7 @@ kOT_sim_GENE = function(sim,out = "OLS",hBETAs = NULL,nPERM,samp_thres){
 	for(OUT in OUTs){
 	for(hBETA in hBETAs){
 		# OUT = OUTs[1]; hBETA = hBETAs[1]
-		cat(sprintf("%s: OUT = %s; hBETA = %s ...\n",
-			date(),OUT,hBETA))
+		message(sprintf("%s: OUT = %s; hBETA = %s ...\n",date(),OUT,hBETA),appendLF = FALSE)
 		
 		colnames(nom_PVAL)[iter] = sprintf("%s_%s",OUT,hBETA)
 		
@@ -702,7 +703,7 @@ kOT_sim_KERN = function(sim,OT,nPERM,hBETAs = NULL){
 	reg_out = c()
 	for(out in all_out){
 	for(hBETA in hBETAs){
-		cat(sprintf("%s: OUT = %s; hBETA = %s ...\n",date(),out,hBETA))
+		message(sprintf("%s: OUT = %s; hBETA = %s ...\n",date(),out,hBETA),appendLF = FALSE)
 		hBETA_2 = as.numeric(gsub("hBETA_","",hBETA))
 		
 		if( out == "OLS" ){
@@ -842,6 +843,7 @@ kOT_sim_KERN = function(sim,OT,nPERM,hBETAs = NULL){
 #' @param nPATH A positive integer for number of pathways to simulate
 #' @param SCEN An integer taking values 1, 2, 3, or 4
 #' @param rr A positive integer indexing a replicate
+#' @return Nothing. A rds file is created within the simulation ROKET directory.
 #' @export
 kOT_sim_REG = function(work_dir,NN,nGENE,nPATH,SCEN,rr){
 	
@@ -906,6 +908,7 @@ kOT_sim_REG = function(work_dir,NN,nGENE,nPATH,SCEN,rr){
 
 #' @title kOT_sim_AGG
 #' @param work_dir A full path to create "sim_ROKET" and subdirectories
+#' @return Nothing. Png files are created within the simulation ROKET directory.
 #' @export
 kOT_sim_AGG = function(work_dir){
 	
@@ -926,14 +929,14 @@ kOT_sim_AGG = function(work_dir){
 		fin_nom_PVAL = list()
 		for(SCEN in seq(4)){
 			# SCEN = 1
-			cat(sprintf("%s: SCEN = %s ...\n",date(),SCEN))
+			message(sprintf("%s: SCEN = %s ...\n",date(),SCEN),appendLF = FALSE)
 		for(rr in seq(RR)){
 			# rr = 1
 			smart_progress(ii = rr,nn = RR,iter2 = 1e2)
 			rr_fn = file.path(my_dirs$rout_dir,
 				sprintf("sim_rr_%s_SCEN%s.rds",rr,SCEN))
 			if( !file.exists(rr_fn) ){
-				cat(sprintf("%s miss ",rr))
+				message(sprintf("%s miss ",rr),appendLF = FALSE)
 				next
 			}
 			tmp_rds = readRDS(rr_fn)
@@ -995,7 +998,7 @@ kOT_sim_AGG = function(work_dir){
 		ures$REJECT = NA
 		dim(ures); ures[1:5,]
 		tot = nrow(ures); tot
-		cat(sprintf("%s: Calculate %s rejections ...\n",date(),tot))
+		message(sprintf("%s: Calculate %s rejections ...\n",date(),tot),appendLF = FALSE)
 		for(ii in seq(tot)){
 			# ii = 1
 			smart_progress(ii = ii,nn = tot,iter2 = 2e2)
@@ -1152,6 +1155,8 @@ kOT_sim_AGG = function(work_dir){
 			width = 45,height = 25,units = "in",dpi = 75)
 		rm(gg)
 	}
+	
+	return(NULL)
 	
 }
 

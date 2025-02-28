@@ -20,6 +20,9 @@ kOT_sim_OT(work_dir, NN, nGENE, nPATH, SCEN, ncores = 1)
 \item{ncores}{A positive integer specifying the number of
 cores/threads to use for optimal transport calculations}
 }
+\value{
+Nothing. Rds files are created within the simulation ROKET directory.
+}
 \description{
 kOT_sim_OT
 }

@@ -9,6 +9,9 @@ kOT_sim_AGG(work_dir)
 \arguments{
 \item{work_dir}{A full path to create "sim_ROKET" and subdirectories}
 }
+\value{
+Nothing. Png files are created within the simulation ROKET directory.
+}
 \description{
 kOT_sim_AGG
 }
