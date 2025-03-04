@@ -25,7 +25,7 @@ setdirs = function(work_dir){
 # Optimal transport simulation
 # ----------
 OT_sim = function(){
-	print("Add simulation code eventually")
+	message("Add simulation code eventually",appendLF = FALSE)
 }
 
 
@@ -247,7 +247,7 @@ kOT_sim_pXX = function(sPATH,pBETA,maxWAY){
 			collapse = ".")
 	}
 		aa = bb + 1
-		# print(dim(pXX)); pXX[1:4,]
+		# message(dim(pXX),appendLF = FALSE); pXX[1:4,]
 	}
 	
 	dim(pXX); pXX[1:3,]
@@ -421,7 +421,7 @@ kOT_sim_make = function(work_dir,NN = 200,
 						while(TRUE){
 							# max_delta
 							CC = runif(n = NN,0,max_delta)
-							prop_delta = mean(TT <= CC); # print(prop_delta)
+							prop_delta = mean(TT <= CC); # message(prop_delta,appendLF = FALSE)
 							prop_diff = prop_delta - prob_event; # prop_diff
 							if( abs(prop_diff) < 0.02 ){
 								break
@@ -662,7 +662,7 @@ kOT_sim_GENE = function(sim,out = "OLS",hBETAs = NULL,nPERM,samp_thres){
 		iter = iter + 1
 	}}
 	
-	print(res)
+	message(res,appendLF = FALSE)
 	return(list(RES = res,nom_PVAL = nom_PVAL))
 	
 }
@@ -830,7 +830,7 @@ kOT_sim_KERN = function(sim,OT,nPERM,hBETAs = NULL){
 		}
 		
 	}}
-	print(reg_out)
+	message(reg_out,appendLF = FALSE)
 	
 	return(reg_out)
 	
